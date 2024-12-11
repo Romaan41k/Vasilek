@@ -21,6 +21,7 @@ public class PlaylistController {
         return ResponseEntity.ok(createdPlaylist);
     }
 
+
     @GetMapping("/{id}")
     public ResponseEntity<Playlist> getPlaylistById(@PathVariable Long id) {
         return playlistService.findById(id)
