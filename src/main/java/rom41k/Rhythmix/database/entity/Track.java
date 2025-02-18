@@ -1,4 +1,4 @@
-package rom41k.Rhythmix.models;
+package rom41k.Rhythmix.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

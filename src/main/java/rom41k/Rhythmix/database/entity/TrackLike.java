@@ -1,4 +1,4 @@
-package rom41k.Rhythmix.models;
+package rom41k.Rhythmix.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "artist_subscriptions")
-public class ArtistSubscription {
+@Table(name = "track_likes")
+public class TrackLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,10 +17,9 @@ public class ArtistSubscription {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "artist_id", nullable = false)
-    private User artist;
+    @JoinColumn(name = "track_id", nullable = false)
+    private Track track;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime subscribedAt = LocalDateTime.now();
+    private LocalDateTime likedAt = LocalDateTime.now();
 }
-

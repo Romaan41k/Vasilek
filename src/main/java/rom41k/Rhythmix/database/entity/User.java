@@ -1,7 +1,9 @@
-package rom41k.Rhythmix.models;
+package rom41k.Rhythmix.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import rom41k.Rhythmix.database.enums.Role;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class User {
     private String name;
 
     @Column(nullable = false)
-    private String role; // "USER" или "ARTIST"
+    private Role role;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
