@@ -1,5 +1,6 @@
 package rom41k.Rhythmix.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import rom41k.Rhythmix.database.entity.ArtistSubscription;
 import rom41k.Rhythmix.repository.ArtistSubscriptionRepository;
 import rom41k.Rhythmix.service.interfaces.ArtistSubscriptionService;
@@ -9,10 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ArtistSubscriptionServiceImpl implements ArtistSubscriptionService {
 
-    @Autowired
-    private ArtistSubscriptionRepository artistSubscriptionRepository;
+    private final ArtistSubscriptionRepository artistSubscriptionRepository;
 
     @Override
     public ArtistSubscription subscribeToArtist(ArtistSubscription subscription) {
