@@ -5,29 +5,49 @@ import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.repository.UserRepository;
 import rom41k.Rhythmix.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
 
-    @Override
-    public User registerUser(User user) {
-        return userRepository.save(user);
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public List<User> allUsers() {
+        return StreamSupport.stream(userRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public User updateUser(Long id, User updatedUser) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setName(updatedUser.getName());
+                    user.setEmail(updatedUser.getEmail());
+                    return userRepository.save(user);
+                }).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public void updatePassword(Long id, String newPassword) {
+        userRepository.findById(id).ifPresent(user -> {
+            user.setPassword(newPassword);
+            userRepository.save(user);
+        });
     }
 
     @Override

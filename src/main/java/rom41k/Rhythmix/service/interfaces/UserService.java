@@ -2,11 +2,14 @@ package rom41k.Rhythmix.service.interfaces;
 
 import rom41k.Rhythmix.database.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    User registerUser(User user);
-    Optional<User> findByEmail(String email);
-    Optional<User> findById(Long id);
+    List<User> allUsers();
+    Optional<User> getUserById(Long id);
+    User updateUser(Long id, User updatedUser);
+    void updatePassword(Long id, String newPassword);
     void deleteUser(Long id);
 }
+
