@@ -1,6 +1,5 @@
 package rom41k.Rhythmix.controller;
 
-
 import rom41k.Rhythmix.dto.LoginUserDto;
 import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
@@ -14,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
-    private final JwtService jwtService;
 
+    private final JwtService jwtService;
     private final AuthenticationService authenticationService;
 
     public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
@@ -39,21 +38,13 @@ public class AuthenticationController {
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto verifyUserDto) {
-        try {
-            authenticationService.verifyUser(verifyUserDto);
-            return ResponseEntity.ok("Account verified successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        authenticationService.verifyUser(verifyUserDto);
+        return ResponseEntity.ok("Account verified successfully");
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<?> resendVerificationCode(@RequestParam String email) {
-        try {
-            authenticationService.resendVerificationCode(email);
-            return ResponseEntity.ok("Verification code sent");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Void> resendVerificationCode(@RequestParam String email) {
+        authenticationService.resendVerificationCode(email);
+        return ResponseEntity.ok().build();
     }
 }

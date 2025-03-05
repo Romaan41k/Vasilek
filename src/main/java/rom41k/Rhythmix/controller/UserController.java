@@ -1,19 +1,15 @@
 package rom41k.Rhythmix.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.dto.UserDTO;
 import rom41k.Rhythmix.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,11 +28,8 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
     @GetMapping("/me")
     public ResponseEntity<Object> authenticatedUser() {
-        logger.info("Received request to /me");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -46,15 +39,12 @@ public class UserController {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof User user) {
-            // Преобразование сущности User в DTO
+            userService.loadPlaylistsAndTracks(user.getId());
+
             UserDTO userDTO = new UserDTO();
             userDTO.setEmail(user.getEmail());
             userDTO.setName(user.getName());
-            userDTO.setRole(user.getRole().name()); // Добавим роль
-
-            // Инициализируем коллекцию вручную
-            user.getPlaylists().size(); // Это вызовет подгрузку коллекции
-            user.getTracks().size(); // То же для треков
+            userDTO.setRole(user.getRole().name());
 
             List<String> playlists = user.getPlaylists().stream()
                     .map(playlist -> playlist.getName())
@@ -66,17 +56,15 @@ public class UserController {
                     .collect(Collectors.toList());
             userDTO.setTracks(tracks);
 
-            return ResponseEntity.ok(userDTO); // Возвращаем обновленный DTO
+            return ResponseEntity.ok(userDTO);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid user data");
         }
     }
 
-
     @GetMapping("/")
     public ResponseEntity<List<User>> allUsers() {
-        List <User> users = userService.allUsers();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.allUsers());
     }
 
     @PutMapping("/{id}")
@@ -95,6 +83,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
     }
-
-
 }

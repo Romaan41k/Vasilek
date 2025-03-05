@@ -1,39 +1,34 @@
 package rom41k.Rhythmix.service;
 
-import rom41k.Rhythmix.dto.LoginUserDto;
-import rom41k.Rhythmix.dto.RegisterUserDto;
-import rom41k.Rhythmix.dto.VerifyUserDto;
-import rom41k.Rhythmix.database.enums.Role;
-import rom41k.Rhythmix.database.entity.User;
-import rom41k.Rhythmix.repository.UserRepository;
 import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import rom41k.Rhythmix.database.entity.User;
+import rom41k.Rhythmix.dto.LoginUserDto;
+import rom41k.Rhythmix.dto.RegisterUserDto;
+import rom41k.Rhythmix.dto.VerifyUserDto;
+import rom41k.Rhythmix.repository.UserRepository;
+import rom41k.Rhythmix.database.enums.Role;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
 
-    public AuthenticationService(
-            UserRepository userRepository,
-            AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder,
-            EmailService emailService
-    ) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
+    private static final String EMAIL_TEMPLATE_PATH = "src/main/resources/templates/verification-email-template.html";
 
     public User signup(RegisterUserDto input) {
         if (userRepository.findByEmail(input.getEmail()).isPresent()) {
@@ -44,10 +39,9 @@ public class AuthenticationService {
         user.setName(input.getUsername());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
-        Role role = Role.valueOf(input.getRole());  // Преобразование строки в Enum
-        user.setRole(role);
+        user.setRole(Role.valueOf(input.getRole()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setEnabled(false);
+        user.setEnabled(true); // set your default status
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
 
@@ -64,10 +58,7 @@ public class AuthenticationService {
         }
 
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
+                new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword())
         );
 
         return user;
@@ -98,43 +89,33 @@ public class AuthenticationService {
             throw new RuntimeException("Account is already verified");
         }
 
-        // Прежде чем генерировать новый код, убедитесь, что старый код уже не был отправлен
-        if (user.getVerificationCode() != null) {
-            System.out.println("Verification code already exists for user: " + email); // Логируем
-        }
-
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         sendVerificationEmail(user);
         userRepository.save(user);
     }
 
-
     private void sendVerificationEmail(User user) {
-        System.out.println("Sending verification email to: " + user.getEmail()); // Логирование отправки
-        String subject = "Account Verification";
-        String verificationCode = "VERIFICATION CODE: " + user.getVerificationCode();
-        String htmlMessage = "<html>"
-                + "<body style=\"font-family: Arial, sans-serif;\">"
-                + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
-                + "<h2 style=\"color: #333;\">Welcome to our app!</h2>"
-                + "<p style=\"font-size: 16px;\">Please enter the verification code below to continue:</p>"
-                + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
-                + "<h3 style=\"color: #333;\">Verification Code:</h3>"
-                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + verificationCode + "</p>"
-                + "</div>"
-                + "</div>"
-                + "</body>"
-                + "</html>";
+        String verificationCode = user.getVerificationCode();
+        String htmlMessage = readEmailTemplate();
+        htmlMessage = htmlMessage.replace("${verificationCode}", verificationCode);
 
         try {
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
-            System.out.println("Email sent successfully to: " + user.getEmail()); // Логируем успешную отправку
+            emailService.sendVerificationEmail(user.getEmail(), "Account Verification", htmlMessage);
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send verification email", e);
         }
     }
 
+    private String readEmailTemplate() {
+        try {
+            // Чтение шаблона из файла
+            Path path = Path.of(EMAIL_TEMPLATE_PATH);
+            return Files.readString(path);
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading email template file", e);
+        }
+    }
 
     private String generateVerificationCode() {
         return String.valueOf(new Random().nextInt(900000) + 100000);

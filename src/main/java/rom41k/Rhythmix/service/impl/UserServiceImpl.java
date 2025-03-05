@@ -1,12 +1,13 @@
 package rom41k.Rhythmix.service.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.repository.UserRepository;
 import rom41k.Rhythmix.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,12 +15,13 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public List<User> allUsers() {
@@ -45,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updatePassword(Long id, String newPassword) {
         userRepository.findById(id).ifPresent(user -> {
-            user.setPassword(newPassword);
+            user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
         });
     }
@@ -53,5 +55,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public void loadPlaylistsAndTracks(Long userId) {
+        User user = entityManager.find(User.class, userId);
+        if (user != null) {
+            user.getPlaylists().size();
+            user.getTracks().size();
+        }
     }
 }
