@@ -4,11 +4,14 @@ import rom41k.Rhythmix.dto.LoginUserDto;
 import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
 import rom41k.Rhythmix.database.entity.User;
+import rom41k.Rhythmix.responses.ApiResponse;
 import rom41k.Rhythmix.responses.LoginResponse;
 import rom41k.Rhythmix.service.AuthenticationService;
 import rom41k.Rhythmix.service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RequestMapping("/auth")
 @RestController
@@ -23,28 +26,29 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<ApiResponse<User>> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
-        return ResponseEntity.ok(registeredUser);
+        return ResponseEntity.ok(new ApiResponse<>(registeredUser));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto){
+    public ResponseEntity<ApiResponse<LoginResponse>> authenticate(@RequestBody LoginUserDto loginUserDto){
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
         LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
-        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity.ok(new ApiResponse<>(loginResponse));
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto verifyUserDto) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> verifyUser(@RequestBody VerifyUserDto verifyUserDto) {
         authenticationService.verifyUser(verifyUserDto);
-        return ResponseEntity.ok("Account verified successfully");
+        return ResponseEntity.ok(ApiResponse.message("Account verified successfully"));
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<Void> resendVerificationCode(@RequestParam String email) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> resendVerificationCode(@RequestParam String email) {
         authenticationService.resendVerificationCode(email);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.message("Verification code resent"));
     }
+
 }
