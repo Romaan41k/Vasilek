@@ -12,6 +12,8 @@ import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
 import rom41k.Rhythmix.repository.UserRepository;
 import rom41k.Rhythmix.database.enums.Role;
+import rom41k.Rhythmix.exception.AccountNotVerifiedException;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +43,7 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setRole(Role.valueOf(input.getRole()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setEnabled(true); // set your default status
+        user.setEnabled(false);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
 
@@ -54,7 +56,7 @@ public class AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isEnabled()) {
-            throw new RuntimeException("Account not verified. Please verify your account.");
+            throw new AccountNotVerifiedException("Account not verified. Please verify your account.");
         }
 
         authenticationManager.authenticate(

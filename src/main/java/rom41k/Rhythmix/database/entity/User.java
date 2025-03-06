@@ -10,6 +10,7 @@ import rom41k.Rhythmix.database.enums.Role;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -35,11 +36,12 @@ public class User implements UserDetails {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Track> tracks;
+    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Track> tracks;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Playlist> playlists;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Playlist> playlists;
+
 
     @Column
     private String verificationCode;
@@ -78,25 +80,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
-    }
-
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public LocalDateTime getVerificationCodeExpiresAt() {
-        return verificationCodeExpiresAt;
-    }
-
-    public void setVerificationCodeExpiresAt(LocalDateTime verificationCodeExpiresAt) {
-        this.verificationCodeExpiresAt = verificationCodeExpiresAt;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 }
