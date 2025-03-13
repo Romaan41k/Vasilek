@@ -3,7 +3,6 @@ package rom41k.Rhythmix.service.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.repository.UserRepository;
@@ -18,7 +17,6 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -39,22 +37,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id)
                 .map(user -> {
                     user.setName(updatedUser.getName());
-                    user.setEmail(updatedUser.getEmail());
                     return userRepository.save(user);
                 }).orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    @Override
-    public void updatePassword(Long id, String newPassword) {
-        userRepository.findById(id).ifPresent(user -> {
-            user.setPassword(passwordEncoder.encode(newPassword));
-            userRepository.save(user);
-        });
-    }
-
-    @Override
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
     }
 
     @Override
@@ -65,4 +49,10 @@ public class UserServiceImpl implements UserService {
             user.getTracks().size();
         }
     }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByAccount_Email(email);
+    }
+
 }

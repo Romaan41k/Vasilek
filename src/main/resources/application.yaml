@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/rhythmix
+    url: jdbc:postgresql://localhost:5432/1
     username: postgres
     password: nNf4rfrk
     driver-class-name: org.postgresql.Driver
@@ -38,3 +38,6 @@ app:
     enabled-default: false
     verification-code-expiration-minutes: 15
 spring.config.import: optional:file:.env[.properties]
+email:
+  template-path: "src/main/resources/templates/verification-email-template.html"
+

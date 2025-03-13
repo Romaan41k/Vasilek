@@ -3,7 +3,7 @@ package rom41k.Rhythmix.controller;
 import rom41k.Rhythmix.dto.LoginUserDto;
 import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
-import rom41k.Rhythmix.database.entity.User;
+import rom41k.Rhythmix.database.entity.UserAccount;
 import rom41k.Rhythmix.responses.ApiResponse;
 import rom41k.Rhythmix.responses.LoginResponse;
 import rom41k.Rhythmix.service.AuthenticationService;
@@ -26,14 +26,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<User>> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
+    public ResponseEntity<ApiResponse<UserAccount>> register(@RequestBody RegisterUserDto registerUserDto) {
+        UserAccount registeredUser = authenticationService.signup(registerUserDto);
         return ResponseEntity.ok(new ApiResponse<>(registeredUser));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> authenticate(@RequestBody LoginUserDto loginUserDto){
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+    public ResponseEntity<ApiResponse<LoginResponse>> authenticate(@RequestBody LoginUserDto loginUserDto) {
+        UserAccount authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
         LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(new ApiResponse<>(loginResponse));
@@ -50,5 +50,4 @@ public class AuthenticationController {
         authenticationService.resendVerificationCode(email);
         return ResponseEntity.ok(ApiResponse.message("Verification code resent"));
     }
-
 }
