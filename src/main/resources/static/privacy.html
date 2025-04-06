@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика конфиденциальности - Rhythmix</title>
+    <style>
+        /* Основные стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Навигационная панель */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(15, 15, 15, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid #ff2a2a;
+        }
+
+        .navbar-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .navbar-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .navbar-links a:hover {
+            color: #ff2a2a;
+        }
+
+        .navbar-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #ff2a2a;
+            transition: width 0.3s;
+        }
+
+        .navbar-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Контейнер контента */
+        .privacy-container {
+            max-width: 800px;
+            margin: 100px auto 50px;
+            padding: 2rem;
+            background-color: #181818;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(255, 42, 42, 0.1);
+            border: 1px solid #2a2a2a;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #ff2a2a;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin: 2rem 0 1rem;
+            color: #ff2a2a;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin-bottom: 1rem;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: #ff2a2a;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-logo">
+        <img src="images/logooo.png" alt="Rhythmix Logo">
+    </div>
+    <div class="navbar-links">
+        <a href="/login">Вход</a>
+        <a href="/register">Регистрация</a>
+    </div>
+</nav>
+<div class="privacy-container">
+    <h1>Политика конфиденциальности Rhythmix</h1>
+
+    <p>Дата последнего обновления: 01.01.2023</p>
+
+    <h2>1. Сбор информации</h2>
+    <p>Мы собираем следующую информацию:</p>
+    <ul>
+        <li>Персональные данные при регистрации (имя, email)</li>
+        <li>Данные об использовании сервиса</li>
+        <li>Технические данные (IP-адрес, тип устройства)</li>
+    </ul>
+
+    <h2>2. Использование информации</h2>
+    <p>Ваши данные используются для:</p>
+    <ul>
+        <li>Предоставления и улучшения сервиса</li>
+        <li>Персонализации пользовательского опыта</li>
+        <li>Обеспечения безопасности</li>
+    </ul>
+
+    <h2>3. Защита данных</h2>
+    <p>Мы применяем современные методы шифрования и защиты данных от несанкционированного доступа.</p>
+
+    <h2>4. Cookies</h2>
+    <p>Наш сервис использует cookies для улучшения работы сайта. Вы можете отключить их в настройках браузера.</p>
+
+    <h2>5. Ответственность за контент</h2>
+    <p>Мы не осуществляем модерацию контента, размещаемого пользователями. Все материалы, опубликованные на платформе, являются личной ответственностью пользователя, который их разместил. Мы не контролируем, не проверяем и не несем ответственности за содержание, которое пользователи размещают на нашем сервисе.</p>
+
+    <h2>6. Изменения в политике</h2>
+    <p>Мы оставляем за собой право вносить изменения в настоящую политику. Все изменения будут опубликованы на этой странице.</p>
+
+    <h2>7. Контакты</h2>
+    <p>По вопросам конфиденциальности обращайтесь: <a href="mailto:privacy@rhythmix.com">privacy@rhythmix.com</a></p>
+</div>
+</body>
+</html>

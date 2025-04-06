@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Rhythmix</title>
+    <style>
+        /* Основные стили */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Навигационная панель */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(15, 15, 15, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid #ff2a2a;
+        }
+
+        .navbar-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .navbar-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .navbar-links a:hover {
+            color: #ff2a2a;
+        }
+
+        .navbar-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #ff2a2a;
+            transition: width 0.3s;
+        }
+
+        .navbar-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Контейнер формы */
+        .container {
+            background-color: #181818;
+            padding: 2.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(255, 42, 42, 0.1);
+            width: 100%;
+            max-width: 400px;
+            margin-top: 80px;
+            border: 1px solid #2a2a2a;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 230px;
+            height: 3px;
+            background-color: #ff2a2a;
+        }
+
+        /* Элементы формы */
+        input, select {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            background-color: #222;
+            color: white;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .password-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin: 5px 0 15px;
+            color: #aaa;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .password-toggle input {
+            width: auto;
+            margin: 0 8px 0 0;
+            cursor: pointer;
+        }
+
+        .password-toggle label {
+            cursor: pointer;
+        }
+
+        .terms {
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #aaa;
+            text-align: center;
+        }
+
+        .terms a {
+            color: #ff2a2a;
+            text-decoration: none;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ff2a2a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #ff2a2a;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: #ff1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 42, 42, 0.3);
+        }
+
+        /* Сообщения */
+        .message {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .error {
+            background-color: rgba(255, 42, 42, 0.2);
+            color: #ff2a2a;
+            border: 1px solid #ff2a2a;
+        }
+
+        /* Анимации */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .container {
+            animation: pulse 6s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-logo">
+        <img src="images/logooo.png" alt="Rhythmix Logo">
+    </div>
+    <div class="navbar-links">
+        <a href="/login">Вход</a>
+        <a href="/register">Регистрация</a>
+    </div>
+</nav>
+<div class="container">
+    <h1>Создайте аккаунт</h1>
+    <div id="message" class="message" style="display: none;"></div>
+
+    <form id="register-form">
+        <input type="text" id="username" name="username" placeholder="Имя пользователя" required>
+        <input type="email" id="email" name="email" placeholder="Электронная почта" required>
+
+        <input type="password" id="password" name="password" placeholder="Пароль" required>
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="Подтвердите пароль" required>
+
+        <div class="password-toggle">
+            <input type="checkbox" id="show-passwords">
+            <label for="show-passwords">Показать пароль</label>
+        </div>
+
+        <select id="role" name="role" required>
+            <option value="" disabled selected>Выберите роль</option>
+            <option value="USER">Пользователь</option>
+            <option value="ARTIST">Артист</option>
+        </select>
+
+        <div class="terms">
+            Нажимая "Зарегистрироваться", вы соглашаетесь с нашей
+            <a href="/privacy" target="_blank">Политикой конфиденциальности</a>
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('show-passwords').addEventListener('change', function() {
+        const passwordFields = [
+            document.getElementById('password'),
+            document.getElementById('confirm-password')
+        ];
+
+        const type = this.checked ? 'text' : 'password';
+        passwordFields.forEach(field => field.type = type);
+    });
+
+    document.getElementById("register-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirm-password").value;
+        const messageElement = document.getElementById("message");
+
+        if (password !== confirmPassword) {
+            messageElement.textContent = "Ошибка: Пароли не совпадают";
+            messageElement.className = "message error";
+            messageElement.style.display = "block";
+            return;
+        }
+
+        const data = {
+            username: document.getElementById("username").value,
+            email: document.getElementById("email").value,
+            password: password,
+            role: document.getElementById("role").value
+        };
+
+        try {
+            const response = await fetch("http://localhost:8080/auth/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                messageElement.textContent = "Регистрация успешна! Проверьте почту для подтверждения.";
+                messageElement.className = "message success";
+                messageElement.style.display = "block";
+
+                setTimeout(() => {
+                    window.location.href = "/verify-email";
+                }, 3000);
+            } else {
+                messageElement.textContent = "Ошибка: " + (result.message || "Неизвестная ошибка");
+                messageElement.className = "message error";
+                messageElement.style.display = "block";
+            }
+        } catch (error) {
+            messageElement.textContent = "Ошибка сети: " + error.message;
+            messageElement.className = "message error";
+            messageElement.style.display = "block";
+        }
+    });
+</script>
+</body>
+</html>
