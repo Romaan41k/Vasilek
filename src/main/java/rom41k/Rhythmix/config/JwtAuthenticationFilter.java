@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            logger.warn("Authorization header is missing or does not start with 'Bearer'. Skipping JWT authentication.");
+            log.warn("Authorization header is missing or does not start with 'Bearer'. Skipping JWT authentication.");
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,16 +49,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String jwt = authHeader.substring(BEARER_PREFIX.length());
             final String userEmail = jwtService.extractUsername(jwt);
 
-            logger.info("JWT token extracted. User email: {}" + userEmail);
+            log.info("JWT token extracted. User email: {}" , userEmail);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {
-                logger.info("No authentication found. Attempting to authenticate user with email: {}" + userEmail);
+                log.info("No authentication found. Attempting to authenticate user with email: {}" , userEmail);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    logger.info("JWT is valid. Authenticating user: {}" + userEmail);
+                    log.info("JWT is valid. Authenticating user: {}" , userEmail);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -68,13 +68,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    logger.warn("JWT is invalid for user: {}" + userEmail);
+                    log.warn("JWT is invalid for user: {}" , userEmail);
                 }
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            logger.error("Error during JWT authentication process", exception);
+            log.error("Error during JWT authentication process", exception);
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }

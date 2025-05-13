@@ -5,14 +5,14 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
-public class UserDTO {
+public class AlbumResponseDTO {
+    private Long id;
     private String name;
-    private String email;
-    private String role;
     private LocalDateTime createdAt;
-
+    private Long artistId;
+    private String artistName;
+    private List<TrackDTO> tracks;
 }

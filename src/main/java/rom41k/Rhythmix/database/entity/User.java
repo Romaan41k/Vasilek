@@ -1,14 +1,26 @@
 package rom41k.Rhythmix.database.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import rom41k.Rhythmix.config.RoleAuthorityProvider;
+import rom41k.Rhythmix.database.enums.Role;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,13 +28,63 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @OneToOne
-    @JoinColumn(name = "account_id", nullable = false, unique = true)
-    private UserAccount account;
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
+
+    @Column
+    private String verificationCode;
+
+    @Column
+    private LocalDateTime verificationCodeExpiresAt;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Track> tracks;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Playlist> playlists;
+
+    // Реализация интерфейса UserDetails
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return RoleAuthorityProvider.getAuthorities(role);
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
 }

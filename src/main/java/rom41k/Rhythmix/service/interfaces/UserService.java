@@ -1,14 +1,18 @@
 package rom41k.Rhythmix.service.interfaces;
 
 import rom41k.Rhythmix.database.entity.User;
+import rom41k.Rhythmix.dto.UpdateUserRequest;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface  UserService {
+public interface UserService {
     List<User> allUsers();
-    Optional<User> getUserById(Long id);
-    User updateUser(Long id, User updatedUser);
-    void loadPlaylistsAndTracks(Long userId);
-    Optional<User> getUserByEmail(String email);
+    Optional<User> getUserById(Long id);  // Согласовать названия
+    User updateUser(Long userId, UpdateUserRequest updateRequest);
+    void updatePassword(Long id, String newPassword);
+    void deleteUserByEmail(String email);
+    Optional<User> getUserByEmail(String email); // Изменено на getUserByEmail
+
+
 }

@@ -24,7 +24,9 @@ public class Track {
     private String genre;
 
     @Column(nullable = false)
-    private String filePath;
+    private String filePath;  // Это будет URL файла, сохраненного на Filebase
+
+    private String coverPath;
 
     @Column(nullable = false)
     private Integer likesCount = 0;

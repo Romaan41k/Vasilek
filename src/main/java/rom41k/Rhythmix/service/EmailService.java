@@ -26,4 +26,15 @@ public class EmailService {
 
         emailSender.send(message);
     }
+
+    public void sendSimpleEmail(String to, String subject, String text) throws MessagingException {
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(text, false); // false = plain text (без HTML)
+
+        emailSender.send(message);
+    }
 }

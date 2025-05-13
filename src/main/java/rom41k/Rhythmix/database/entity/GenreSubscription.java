@@ -2,10 +2,15 @@ package rom41k.Rhythmix.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "genre_subscriptions")
 public class GenreSubscription {
     @Id
@@ -14,7 +19,7 @@ public class GenreSubscription {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private UserAccount user;
+    private User user;
 
     @Column(nullable = false)
     private String genre;

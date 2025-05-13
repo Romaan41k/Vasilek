@@ -1,7 +1,6 @@
 package rom41k.Rhythmix.config;
 
 import lombok.RequiredArgsConstructor;
-import rom41k.Rhythmix.repository.UserAccountRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,14 +10,15 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import rom41k.Rhythmix.repository.UserRepository;
 
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfiguration {
 
     @Bean
-    public UserDetailsService userDetailsService(UserAccountRepository userAccountRepository) {
-        return username -> userAccountRepository.findByEmail(username)
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return username -> userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 

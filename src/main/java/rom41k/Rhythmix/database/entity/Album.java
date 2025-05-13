@@ -7,7 +7,10 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "albums")
+@Table(
+        name = "albums",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "artist_id"})  // Уникальность по названию и артисту
+)
 public class Album {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
