@@ -5,18 +5,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
+
     @GetMapping("/verify-email")
     public String verifyEmailPage() {
-        return "forward:/verify-email.html";  // Ищет файл в templates/
+        return "forward:/verify-email.html";
     }
 
     @GetMapping("/login")
     public String loginPage() {
-        return "forward:/login.html";  // Ищет файл в templates/
+        return "forward:/login.html";
     }
 
     @GetMapping("/register")
-    public String homePage() {
+    public String registerPage() {
         return "forward:/register.html";
     }
 

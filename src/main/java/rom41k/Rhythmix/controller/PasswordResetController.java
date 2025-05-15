@@ -1,28 +1,25 @@
-// rom41k.Rhythmix.controller.PasswordResetController
-
 package rom41k.Rhythmix.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import rom41k.Rhythmix.dto.PasswordResetRequest;
-import rom41k.Rhythmix.service.PasswordResetService;
+import rom41k.Rhythmix.service.interfaces.PasswordResetService;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class PasswordResetController {
+
     private final PasswordResetService passwordResetService;
     private final PasswordEncoder passwordEncoder;
 
-    // Запрос на сброс пароля (отправка письма)
     @PostMapping("/forgot-password")
     public String forgotPassword(@RequestParam String email) {
         passwordResetService.requestPasswordReset(email);
         return "Письмо для сброса пароля отправлено";
     }
 
-    // Подтверждение сброса пароля
     @PostMapping("/reset-password")
     public String resetPassword(
             @RequestParam String token,

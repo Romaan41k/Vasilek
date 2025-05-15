@@ -2,10 +2,7 @@ package rom41k.Rhythmix.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -14,5 +11,4 @@ public class UserDTO {
     private String email;
     private String role;
     private LocalDateTime createdAt;
-
 }

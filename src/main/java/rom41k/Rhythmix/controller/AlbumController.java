@@ -2,6 +2,9 @@ package rom41k.Rhythmix.controller;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import rom41k.Rhythmix.database.entity.Album;
 import rom41k.Rhythmix.database.entity.Track;
 import rom41k.Rhythmix.database.entity.User;
@@ -10,13 +13,8 @@ import rom41k.Rhythmix.dto.AlbumResponseDTO;
 import rom41k.Rhythmix.dto.ArtistDTO;
 import rom41k.Rhythmix.dto.TrackDTO;
 import rom41k.Rhythmix.service.interfaces.AlbumService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.security.core.Authentication;
 import rom41k.Rhythmix.service.interfaces.UserService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,28 +33,20 @@ public class AlbumController {
     @PostMapping
     public ResponseEntity<?> createAlbum(@RequestBody Album album, Authentication authentication) {
         try {
-            // Получаем текущего пользователя
             User currentUser = (User) authentication.getPrincipal();
-            album.setArtist(currentUser);  // Связываем альбом с текущим пользователем
-
-            // Создаем альбом
+            album.setArtist(currentUser);
             Album createdAlbum = albumService.createAlbum(album);
-
-            // Преобразуем сущность Album в AlbumResponseDTO
             AlbumResponseDTO albumResponseDTO = toAlbumResponseDTO(createdAlbum);
-
             return ResponseEntity.ok(albumResponseDTO);
         } catch (DataIntegrityViolationException e) {
-            // Если альбом с таким названием уже существует у этого исполнителя, возвращаем ошибку
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An album with this name already exists for this artist.");
         }
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<AlbumResponseDTO> getAlbumById(@PathVariable Long id) {
         return albumService.findById(id)
-                .map(album -> ResponseEntity.ok(toAlbumResponseDTO(album))) // Преобразуем в DTO
+                .map(album -> ResponseEntity.ok(toAlbumResponseDTO(album)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -71,7 +61,6 @@ public class AlbumController {
         if (!artist.getRole().equals(Role.ARTIST)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not an artist");
         }
-
 
         List<Album> albums = albumService.findByArtistId(artistId);
         List<AlbumResponseDTO> albumResponseDTOs = albums.stream()
@@ -88,20 +77,12 @@ public class AlbumController {
             Authentication authentication
     ) {
         Long userId = ((User) authentication.getPrincipal()).getId();
-
-        // Добавляем трек в альбом
         albumService.addTrackToAlbum(albumId, trackId, userId);
-
-        // Получаем обновлённый альбом
         Album album = albumService.findById(albumId)
                 .orElseThrow(() -> new IllegalArgumentException("Альбом не найден"));
-
-        // Преобразуем в DTO и возвращаем
         AlbumResponseDTO albumResponseDTO = toAlbumResponseDTO(album);
-
         return ResponseEntity.ok(albumResponseDTO);
     }
-
 
     @DeleteMapping("/{albumId}/tracks/{trackId}")
     public ResponseEntity<AlbumResponseDTO> removeTrackFromAlbum(
@@ -110,12 +91,9 @@ public class AlbumController {
             Authentication authentication
     ) {
         Long userId = ((User) authentication.getPrincipal()).getId();
-
         albumService.removeTrackFromAlbum(albumId, trackId, userId);
-
         Album album = albumService.findById(albumId)
                 .orElseThrow(() -> new IllegalArgumentException("Альбом не найден"));
-
         AlbumResponseDTO albumResponseDTO = toAlbumResponseDTO(album);
         return ResponseEntity.ok(albumResponseDTO);
     }
@@ -126,7 +104,6 @@ public class AlbumController {
             Authentication authentication
     ) {
         Long userId = ((User) authentication.getPrincipal()).getId();
-
         Optional<Album> albumOptional = albumService.findById(albumId);
         if (albumOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Альбом не найден");
@@ -160,7 +137,6 @@ public class AlbumController {
         }
     }
 
-    // Метод для преобразования Album в AlbumResponseDTO
     private AlbumResponseDTO toAlbumResponseDTO(Album album) {
         AlbumResponseDTO dto = new AlbumResponseDTO();
         dto.setId(album.getId());
@@ -169,7 +145,6 @@ public class AlbumController {
         dto.setArtistId(album.getArtist().getId());
         dto.setArtistName(album.getArtist().getName());
 
-        // Если tracks null, заменяем на пустой список
         List<TrackDTO> trackDTOs = (album.getTracks() != null)
                 ? album.getTracks().stream().map(this::mapTrackToDto).toList()
                 : List.of();
@@ -178,8 +153,6 @@ public class AlbumController {
         return dto;
     }
 
-
-    // Метод для преобразования Track в TrackDTO
     private TrackDTO mapTrackToDto(Track track) {
         return new TrackDTO(
                 track.getId(),

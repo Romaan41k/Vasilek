@@ -20,12 +20,10 @@ public class ArtistSubscriptionController {
         this.artistSubscriptionService = artistSubscriptionService;
     }
 
-    // Метод для получения ID пользователя из аутентификации
     private Long getUserId(Authentication authentication) {
         return ((User) authentication.getPrincipal()).getId();
     }
 
-    // Подписка на артиста
     @PostMapping
     public ResponseEntity<ArtistSubscriptionDTO> subscribeToArtist(
             @RequestBody ArtistSubscription subscription,
@@ -33,12 +31,10 @@ public class ArtistSubscriptionController {
     ) {
         User user = (User) authentication.getPrincipal();
         subscription.setUser(user);
-
         ArtistSubscription savedSubscription = artistSubscriptionService.subscribeToArtist(subscription);
-        return ResponseEntity.ok(toDTO(savedSubscription)); // Возвращаем DTO
+        return ResponseEntity.ok(toDTO(savedSubscription));
     }
 
-    // Получение подписок текущего пользователя
     @GetMapping("/my")
     public ResponseEntity<List<ArtistSubscriptionDTO>> getMySubscriptions(Authentication authentication) {
         Long userId = getUserId(authentication);
@@ -46,28 +42,23 @@ public class ArtistSubscriptionController {
         List<ArtistSubscriptionDTO> dtoList = subscriptions.stream()
                 .map(this::toDTO)
                 .toList();
-        return ResponseEntity.ok(dtoList); // Возвращаем список DTO
+        return ResponseEntity.ok(dtoList);
     }
 
-    // Отписка от артиста
     @DeleteMapping
     public ResponseEntity<Void> unsubscribeFromArtist(
             @RequestParam Long artistId,
             Authentication authentication
     ) {
         Long userId = getUserId(authentication);
-
         try {
             artistSubscriptionService.unsubscribeFromArtist(userId, artistId);
-            return ResponseEntity.ok().build(); // Успешное удаление
+            return ResponseEntity.ok().build();
         } catch (IllegalStateException e) {
-            // Если подписка не найдена, вернем ошибку с сообщением
-            return ResponseEntity.status(400).body(null); // Код ошибки можно настроить по необходимости
+            return ResponseEntity.status(400).body(null);
         }
     }
 
-
-    // Преобразование сущности ArtistSubscription в DTO
     private ArtistSubscriptionDTO toDTO(ArtistSubscription subscription) {
         return new ArtistSubscriptionDTO(
                 subscription.getId(),

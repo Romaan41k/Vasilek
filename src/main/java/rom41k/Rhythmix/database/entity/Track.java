@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
-
 @Data
 @Entity
 @Table(name = "tracks")
@@ -24,7 +23,7 @@ public class Track {
     private String genre;
 
     @Column(nullable = false)
-    private String filePath;  // Это будет URL файла, сохраненного на Filebase
+    private String filePath;
 
     private String coverPath;
 

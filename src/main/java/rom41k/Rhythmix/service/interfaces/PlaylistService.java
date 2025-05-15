@@ -13,5 +13,4 @@ public interface PlaylistService {
     List<Playlist> findByUserId(Long userId);
     Optional<Playlist> addTrackToPlaylist(Long playlistId, Long trackId, Long userId);
     Optional<Playlist> removeTrackFromPlaylist(Long playlistId, Long trackId, Long userId);
-
 }

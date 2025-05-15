@@ -1,7 +1,7 @@
 package rom41k.Rhythmix.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource; // Правильный импорт для Resource
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,21 +10,20 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException; // Импорт для ResponseStatusException
+import org.springframework.web.server.ResponseStatusException;
 import rom41k.Rhythmix.database.entity.Track;
 import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.dto.ArtistDTO;
 import rom41k.Rhythmix.dto.TrackDTO;
 import rom41k.Rhythmix.repository.UserRepository;
-import rom41k.Rhythmix.service.interfaces.TrackService; // Убран FilebaseService, так как не используется в предоставленном коде
+import rom41k.Rhythmix.service.interfaces.TrackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
-
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException; // Импорт для MalformedURLException
-import java.nio.file.Files; // Импорт для Files
+import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -42,8 +41,6 @@ public class TrackController {
 
     @Autowired
     private UserRepository userRepository;
-
-    // Убран @Autowired private FilebaseService filebaseService; так как он не используется в предоставленном коде
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadTrack(
@@ -110,7 +107,6 @@ public class TrackController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/genre/{genre}")
     public ResponseEntity<List<TrackDTO>> getTracksByGenre(@PathVariable String genre) {
         List<Track> tracks = trackService.findByGenre(genre);
@@ -159,7 +155,6 @@ public class TrackController {
         return ResponseEntity.ok(trackDTOs);
     }
 
-
     @GetMapping("/my")
     public ResponseEntity<List<TrackDTO>> getMyTracks() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -196,7 +191,6 @@ public class TrackController {
             Optional<Path> filePathOptional = trackService.getTrackFilePath(id);
 
             if (filePathOptional.isEmpty()) {
-                // Трек или файл не найден
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Track or file not found");
             }
 
@@ -205,50 +199,41 @@ public class TrackController {
             try {
                 resource = new UrlResource(filePath.toUri());
             } catch (MalformedURLException e) {
-                // Ошибка при создании URL ресурса
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error creating file resource URL", e);
             }
 
-
-            // Проверяем, существует ли файл и доступен ли для чтения
             if (!resource.exists() || !resource.isReadable()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found or not readable");
             }
 
-            // Определяем тип контента
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) {
-                contentType = "application/octet-stream"; // Тип по умолчанию, если не удалось определить
+                contentType = "application/octet-stream";
             }
 
-            // Определяем имя файла для скачивания
             String filename = resource.getFilename();
 
-            // Устанавливаем заголовки ответа
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
             try {
                 headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()));
             } catch (IOException e) {
-                // Ошибка при получении длины файла
-                // Можно проигнорировать или вернуть ошибку, в зависимости от требований
+                // Ignore
             }
-
 
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(resource);
 
         } catch (ResponseStatusException ex) {
-            // Перебрасываем уже созданные ResponseStatusException
             throw ex;
         } catch (Exception e) {
-            // Любые другие непредвиденные ошибки
             log.error("Error during track download", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while downloading the track", e);
         }
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrack(@PathVariable Long id) {
         try {
@@ -302,5 +287,4 @@ public class TrackController {
             return ResponseEntity.status(500).body("Ошибка при редактировании трека");
         }
     }
-
 }

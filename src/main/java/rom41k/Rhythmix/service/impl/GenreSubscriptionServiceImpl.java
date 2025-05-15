@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 import rom41k.Rhythmix.database.entity.GenreSubscription;
 import rom41k.Rhythmix.repository.GenreSubscriptionRepository;
 import rom41k.Rhythmix.service.interfaces.GenreSubscriptionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +21,6 @@ public class GenreSubscriptionServiceImpl implements GenreSubscriptionService {
         Long userId = subscription.getUser().getId();
         String genre = subscription.getGenre();
 
-        // Проверка: есть ли уже такая подписка
         boolean alreadyExists = genreSubscriptionRepository.existsByUserIdAndGenre(userId, genre);
         if (alreadyExists) {
             throw new IllegalStateException("Вы уже подписаны на жанр: " + genre);
@@ -30,7 +28,6 @@ public class GenreSubscriptionServiceImpl implements GenreSubscriptionService {
 
         return genreSubscriptionRepository.save(subscription);
     }
-
 
     @Override
     public List<GenreSubscription> findByUserId(Long userId) {
@@ -47,6 +44,4 @@ public class GenreSubscriptionServiceImpl implements GenreSubscriptionService {
         }
         return false;
     }
-
-
 }

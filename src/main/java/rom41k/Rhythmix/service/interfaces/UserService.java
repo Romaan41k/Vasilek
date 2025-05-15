@@ -8,11 +8,9 @@ import java.util.Optional;
 
 public interface UserService {
     List<User> allUsers();
-    Optional<User> getUserById(Long id);  // Согласовать названия
+    Optional<User> getUserById(Long id);
     User updateUser(Long userId, UpdateUserRequest updateRequest);
     void updatePassword(Long id, String newPassword);
     void deleteUserByEmail(String email);
-    Optional<User> getUserByEmail(String email); // Изменено на getUserByEmail
-
-
+    Optional<User> getUserByEmail(String email);
 }

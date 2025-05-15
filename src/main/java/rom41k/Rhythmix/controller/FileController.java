@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import rom41k.Rhythmix.service.FilebaseService;
+import rom41k.Rhythmix.service.interfaces.FilebaseService;
 
 import java.io.IOException;
 
@@ -12,6 +12,7 @@ import java.io.IOException;
 @RequestMapping("/api/files")
 public class FileController {
 
+    @Autowired
     private final FilebaseService filebaseService;
 
     @Autowired
@@ -22,7 +23,7 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = filebaseService.uploadFile(file, "my-music-bucket"); // Замените на ваше имя bucket
+            String fileUrl = filebaseService.uploadFile(file, "my-music-bucket");
             return ResponseEntity.ok(fileUrl);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Ошибка при загрузке файла: " + e.getMessage());

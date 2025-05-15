@@ -31,7 +31,6 @@ public class GenreSubscriptionController {
     ) {
         User user = (User) authentication.getPrincipal();
         subscription.setUser(user);
-
         GenreSubscription savedSubscription = genreSubscriptionService.subscribeToGenre(subscription);
         return ResponseEntity.ok(toDTO(savedSubscription));
     }
@@ -55,7 +54,6 @@ public class GenreSubscriptionController {
         boolean deleted = genreSubscriptionService.unsubscribeFromGenre(userId, genre);
         return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
-
 
     private GenreSubscriptionDTO toDTO(GenreSubscription sub) {
         return new GenreSubscriptionDTO(

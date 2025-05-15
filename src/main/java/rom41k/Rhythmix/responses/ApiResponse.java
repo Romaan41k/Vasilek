@@ -10,7 +10,6 @@ public class ApiResponse<T> {
     private final T data;
 
     public static ApiResponse<Map<String, String>> message(String message) {
-        // Если message == null, будет использовано дефолтное сообщение
         String responseMessage = (message != null) ? message : "Сообщение не доступно";
         return new ApiResponse<>(Map.of("message", responseMessage));
     }

@@ -11,5 +11,4 @@ public interface GenreSubscriptionRepository extends JpaRepository<GenreSubscrip
     void deleteByUserIdAndGenre(Long userId, String genre);
     boolean existsByUserIdAndGenre(Long userId, String genre);
     Optional<GenreSubscription> findByUserIdAndGenre(Long userId, String genre);
-
 }

@@ -6,8 +6,8 @@ import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
 import rom41k.Rhythmix.responses.ApiResponse;
 import rom41k.Rhythmix.responses.LoginResponse;
-import rom41k.Rhythmix.service.AuthenticationService;
-import rom41k.Rhythmix.service.JwtService;
+import rom41k.Rhythmix.service.interfaces.AuthenticationService;
+import rom41k.Rhythmix.service.interfaces.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,5 +50,4 @@ public class AuthenticationController {
         authenticationService.resendVerificationCode(email);
         return ResponseEntity.ok(ApiResponse.message("Verification code resent"));
     }
-
 }

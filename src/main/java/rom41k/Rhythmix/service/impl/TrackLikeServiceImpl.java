@@ -2,21 +2,12 @@ package rom41k.Rhythmix.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import rom41k.Rhythmix.database.entity.Track;
 import rom41k.Rhythmix.database.entity.TrackLike;
-import rom41k.Rhythmix.database.entity.User;
 import rom41k.Rhythmix.repository.TrackLikeRepository;
 import rom41k.Rhythmix.repository.TrackRepository;
 import rom41k.Rhythmix.service.interfaces.TrackLikeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +23,10 @@ public class TrackLikeServiceImpl implements TrackLikeService {
                 .orElseThrow(() -> new RuntimeException("Track not found"));
 
         track.setLikesCount(track.getLikesCount() + 1);
-        trackRepository.save(track); // обновляем лайки
+        trackRepository.save(track);
 
         return trackLikeRepository.save(trackLike);
     }
-
 
     @Override
     public boolean isTrackLiked(Long userId, Long trackId) {
@@ -49,9 +39,9 @@ public class TrackLikeServiceImpl implements TrackLikeService {
         TrackLike like = trackLikeRepository.findByUserIdAndTrackId(userId, trackId)
                 .orElseThrow(() -> new RuntimeException("Like not found"));
 
-        Track track = like.getTrack(); // гарантированно инициализированный трек
+        Track track = like.getTrack();
         track.setLikesCount(Math.max(0, track.getLikesCount() - 1));
-        trackRepository.save(track); // обновляем лайки
+        trackRepository.save(track);
 
         trackLikeRepository.delete(like);
     }

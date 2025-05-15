@@ -1,5 +1,3 @@
-// rom41k.Rhythmix.repository.PasswordResetTokenRepository
-
 package rom41k.Rhythmix.repository;
 
 import rom41k.Rhythmix.database.entity.PasswordResetToken;

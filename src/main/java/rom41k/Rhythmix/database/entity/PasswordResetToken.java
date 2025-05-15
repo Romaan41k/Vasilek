@@ -1,11 +1,8 @@
-// rom41k.Rhythmix.database.entity.PasswordResetToken
-
 package rom41k.Rhythmix.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Data

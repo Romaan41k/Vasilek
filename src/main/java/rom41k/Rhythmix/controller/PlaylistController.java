@@ -126,7 +126,6 @@ public class PlaylistController {
         return dto;
     }
 
-
     private TrackDTO mapTrackToDto(Track track) {
         return new TrackDTO(
                 track.getId(),
@@ -140,5 +139,4 @@ public class PlaylistController {
                 track.getCreatedAt()
         );
     }
-
 }

@@ -1,6 +1,5 @@
 package rom41k.Rhythmix.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -17,7 +16,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@Slf4j
 public class SecurityConfiguration {
 
     private final AuthenticationProvider authenticationProvider;
@@ -36,12 +34,33 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        log.info("Configuring security filter chain");
-
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/uploads/**","/verify-email","/register", "/auth/**", "/register.html", "/styles.css", "/verify-email.html","/login.html", "/api/auth/login/**","/login","/auth/login","/api/auth/verify/**","/api/tracks/*/download", "/verify", "/resend", "/static/**", "/images/**", "/privacy**","/main.html", "/uploads/covers/**", "/api/auth/forgot-password","/api/auth/reset-password" ).permitAll()
+                        .requestMatchers(
+                                "/uploads/**",
+                                "/verify-email",
+                                "/register",
+                                "/auth/**",
+                                "/register.html",
+                                "/styles.css",
+                                "/verify-email.html",
+                                "/login.html",
+                                "/api/auth/login/**",
+                                "/login",
+                                "/auth/login",
+                                "/api/auth/verify/**",
+                                "/api/tracks/*/download",
+                                "/verify",
+                                "/resend",
+                                "/static/**",
+                                "/images/**",
+                                "/privacy**",
+                                "/main.html",
+                                "/uploads/covers/**",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

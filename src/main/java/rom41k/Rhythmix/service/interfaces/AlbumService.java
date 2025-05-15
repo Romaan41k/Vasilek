@@ -13,5 +13,4 @@ public interface AlbumService {
     void addTrackToAlbum(Long albumId, Long trackId, Long userId);
     void removeTrackFromAlbum(Long albumId, Long trackId, Long userId);
     Album updateAlbum(Long albumId, Album updatedAlbum, Long userId);
-
 }

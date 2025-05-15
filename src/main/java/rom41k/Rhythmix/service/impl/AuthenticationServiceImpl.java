@@ -1,4 +1,4 @@
-package rom41k.Rhythmix.service;
+package rom41k.Rhythmix.service.impl;
 
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,8 @@ import rom41k.Rhythmix.dto.RegisterUserDto;
 import rom41k.Rhythmix.dto.VerifyUserDto;
 import rom41k.Rhythmix.exception.AccountNotVerifiedException;
 import rom41k.Rhythmix.repository.UserRepository;
+import rom41k.Rhythmix.service.interfaces.EmailService;
+import rom41k.Rhythmix.service.interfaces.AuthenticationService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,7 +25,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -33,45 +35,37 @@ public class AuthenticationService {
     @Value("${email.template-path}")
     private String emailTemplatePath;
 
-    // Регистрация пользователя
+    @Override
     public User signup(RegisterUserDto input) {
-        // Проверяем, существует ли уже пользователь с таким email
         if (userRepository.findByEmail(input.email()).isPresent()) {
             throw new RuntimeException("Email already in use");
         }
 
-        // Создаем нового пользователя
         User user = new User();
         user.setName(input.username());
         user.setEmail(input.email());
         user.setPassword(passwordEncoder.encode(input.password()));
         user.setCreatedAt(LocalDateTime.now());
         user.setRole(Role.valueOf(input.role()));
-        user.setEnabled(false); // Статус не подтвержден
+        user.setEnabled(false);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
 
-        // Сохраняем пользователя
         userRepository.save(user);
-
-        // Отправляем email с кодом подтверждения
         sendVerificationEmail(user);
 
         return user;
     }
 
-    // Аутентификация пользователя
+    @Override
     public User authenticate(LoginUserDto input) {
-        // Ищем пользователя по email
         User user = userRepository.findByEmail(input.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Проверяем, подтверждена ли учетная запись
         if (!user.isEnabled()) {
             throw new AccountNotVerifiedException("Account not verified. Please verify your account.");
         }
 
-        // Аутентификация
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(input.email(), input.password())
         );
@@ -79,7 +73,7 @@ public class AuthenticationService {
         return user;
     }
 
-    // Подтверждение учетной записи пользователя
+    @Override
     public void verifyUser(VerifyUserDto input) {
         User user = userRepository.findByEmail(input.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -87,18 +81,19 @@ public class AuthenticationService {
         if (user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Verification code has expired");
         }
+
         if (!user.getVerificationCode().equals(input.verificationCode())) {
             throw new RuntimeException("Invalid verification code");
         }
 
-        user.setEnabled(true); // Подтверждаем учетную запись
-        user.setVerificationCode(null); // Убираем код подтверждения
-        user.setVerificationCodeExpiresAt(null); // Убираем срок действия кода
+        user.setEnabled(true);
+        user.setVerificationCode(null);
+        user.setVerificationCodeExpiresAt(null);
 
-        userRepository.save(user); // Сохраняем изменения
+        userRepository.save(user);
     }
 
-    // Повторная отправка кода подтверждения
+    @Override
     public void resendVerificationCode(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -110,11 +105,10 @@ public class AuthenticationService {
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
 
-        sendVerificationEmail(user); // Отправляем новый код
-        userRepository.save(user); // Сохраняем изменения
+        sendVerificationEmail(user);
+        userRepository.save(user);
     }
 
-    // Отправка email с кодом подтверждения
     private void sendVerificationEmail(User user) {
         String verificationCode = user.getVerificationCode();
         String htmlMessage = readEmailTemplate().replace("${verificationCode}", verificationCode);
@@ -126,7 +120,6 @@ public class AuthenticationService {
         }
     }
 
-    // Чтение шаблона email
     private String readEmailTemplate() {
         try {
             Path path = Path.of(emailTemplatePath);
@@ -136,7 +129,6 @@ public class AuthenticationService {
         }
     }
 
-    // Генерация кода подтверждения
     private String generateVerificationCode() {
         return String.valueOf(new Random().nextInt(900000) + 100000);
     }

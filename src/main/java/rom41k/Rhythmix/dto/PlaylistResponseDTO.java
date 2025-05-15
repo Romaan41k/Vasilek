@@ -2,7 +2,6 @@ package rom41k.Rhythmix.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,5 +13,5 @@ public class PlaylistResponseDTO {
     private LocalDateTime createdAt;
     private Long userId;
     private String username;
-    private List<TrackDTO> tracks;  // ← Добавили список треков
+    private List<TrackDTO> tracks;
 }

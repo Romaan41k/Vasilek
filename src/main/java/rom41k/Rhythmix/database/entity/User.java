@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import rom41k.Rhythmix.config.RoleAuthorityProvider;
 import rom41k.Rhythmix.database.enums.Role;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
@@ -56,7 +55,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Playlist> playlists;
 
-    // Реализация интерфейса UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return RoleAuthorityProvider.getAuthorities(role);
@@ -86,5 +84,4 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
-
 }

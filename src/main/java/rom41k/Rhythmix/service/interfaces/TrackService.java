@@ -20,6 +20,4 @@ public interface TrackService {
     List<Track> findAll();
     Optional<Path> getTrackFilePath(Long id);
     void updateTrack(Long trackId, String title, String genre, MultipartFile newCover, User artist);
-
-
 }

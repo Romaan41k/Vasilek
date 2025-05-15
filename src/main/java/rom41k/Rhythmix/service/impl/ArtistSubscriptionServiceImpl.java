@@ -25,16 +25,13 @@ public class ArtistSubscriptionServiceImpl implements ArtistSubscriptionService 
         Long userId = subscription.getUser().getId();
         Long artistId = subscription.getArtist().getId();
 
-        // Проверка, существует ли уже подписка
         if (artistSubscriptionRepository.existsByUserIdAndArtistId(userId, artistId)) {
             throw new IllegalStateException("Вы уже подписаны на этого артиста");
         }
 
-        // Загружаем артиста полностью из базы
         User artist = userRepository.findById(artistId)
                 .orElseThrow(() -> new IllegalArgumentException("Артист не найден"));
 
-        // Проверяем, что это действительно артист (например, по роли)
         if (artist.getRole() != Role.ARTIST) {
             throw new IllegalArgumentException("Пользователь не является артистом");
         }
@@ -43,8 +40,6 @@ public class ArtistSubscriptionServiceImpl implements ArtistSubscriptionService 
 
         return artistSubscriptionRepository.save(subscription);
     }
-
-
 
     @Override
     public List<ArtistSubscription> findByUserId(Long userId) {
@@ -62,5 +57,4 @@ public class ArtistSubscriptionServiceImpl implements ArtistSubscriptionService 
 
         artistSubscriptionRepository.delete(subscriptionOpt.get());
     }
-
 }
