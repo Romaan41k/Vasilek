@@ -3,58 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Подтверждение почты - Rhythmix</title>
+    <title>Подтверждение почты - Василёк</title>
     <style>
-        /* Основные стили */
+        :root {
+            --primary-color: #5A87D0;
+            --secondary-color: #9d79d0;
+            --tertiary-color: #64b58e;
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --surface-highlight-color: #242424;
+            --text-color: #ffffff;
+            --text-muted-color: #b3b3b3;
+            --border-color: #2f2f2f;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #0f0f0f;
-            color: white;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
 
-        /* Навигационная панель */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background-color: rgba(15, 15, 15, 0.9);
+            background-color: rgba(26, 26, 26, 0.9);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
             z-index: 1000;
-            border-bottom: 1px solid #ff2a2a;
+            border-bottom: 1px solid var(--primary-color);
+            backdrop-filter: blur(5px);
         }
-
+        .navbar-logo a { display: flex; align-items: center; }
         .navbar-logo img {
-            height: 40px;
+            height: 65px;
             width: auto;
         }
-
         .navbar-links {
             display: flex;
             gap: 1.5rem;
         }
-
         .navbar-links a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
             position: relative;
         }
-
         .navbar-links a:hover {
-            color: #ff2a2a;
+            color: var(--primary-color);
         }
-
         .navbar-links a::after {
             content: '';
             position: absolute;
@@ -62,37 +70,33 @@
             left: 0;
             width: 0;
             height: 2px;
-            background-color: #ff2a2a;
+            background-color: var(--primary-color);
             transition: width 0.3s;
         }
-
         .navbar-links a:hover::after {
             width: 100%;
         }
 
-        /* Контейнер формы */
         .container {
-            background-color: #181818;
+            background-color: var(--surface-color);
             padding: 2.5rem;
             border-radius: 12px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(255, 42, 42, 0.1);
+            box-shadow: 0 8px 20px rgba(90, 135, 208, 0.1);
             width: 100%;
             max-width: 400px;
             margin-top: 80px;
-            border: 1px solid #2a2a2a;
+            border: 1px solid var(--border-color);
+            animation: pulse 8s infinite ease-in-out;
         }
 
         h1 {
             font-size: 26px;
             margin-bottom: 1.5rem;
-            color: #fff;
+            color: var(--text-color);
             position: relative;
             display: inline-block;
-            padding-bottom: 10px;
-            width: 100%;
         }
-
         h1::after {
             content: '';
             position: absolute;
@@ -101,33 +105,31 @@
             transform: translateX(-50%);
             width: 330px;
             height: 3px;
-            background-color: #ff2a2a;
+            background-color: var(--primary-color);
         }
 
-        /* Элементы формы */
         input {
             width: 100%;
             padding: 14px;
             margin: 10px 0;
-            border: 1px solid #2a2a2a;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background-color: #222;
-            color: white;
+            background-color: var(--surface-highlight-color);
+            color: var(--text-color);
             box-sizing: border-box;
             font-size: 1rem;
             transition: all 0.3s;
         }
-
         input:focus {
             outline: none;
-            border-color: #ff2a2a;
-            box-shadow: 0 0 0 2px rgba(255, 42, 42, 0.2);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(90, 135, 208, 0.2);
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background-color: #ff2a2a;
+            background-color: var(--primary-color);
             border: none;
             color: white;
             font-weight: bold;
@@ -139,75 +141,97 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         button:hover {
-            background-color: #ff1a1a;
+            background-color: #4a77c0;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 42, 42, 0.3);
+            box-shadow: 0 4px 12px rgba(90, 135, 208, 0.3);
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
         }
 
-        /* Сообщения */
         .message {
             margin: 1rem 0;
-            padding: 0.75rem;
+            padding: .75rem;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: .9rem;
             display: none;
+            border-width: 1px;
+            border-style: solid;
         }
-
         .success {
-            background-color: rgba(40, 167, 69, 0.2);
-            color: #28a745;
-            border: 1px solid #28a745;
+            background-color: rgba(100, 181, 142, 0.15);
+            color: var(--tertiary-color);
+            border-color: var(--tertiary-color);
         }
-
         .error {
-            background-color: rgba(255, 42, 42, 0.2);
-            color: #ff2a2a;
-            border: 1px solid #ff2a2a;
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border-color: #dc3545;
         }
 
-        /* Анимации */
+        .resend-link {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-muted-color);
+        }
+        .resend-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .resend-link a:hover {
+            text-decoration: underline;
+        }
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        .container {
-            animation: pulse 6s infinite ease-in-out;
+            0% { box-shadow: 0 8px 20px rgba(90, 135, 208, 0.1); }
+            50% { box-shadow: 0 8px 25px rgba(90, 135, 208, 0.15); }
+            100% { box-shadow: 0 8px 20px rgba(90, 135, 208, 0.1); }
         }
     </style>
 </head>
 <body>
+
+<!-- === Шаг 2: Замена HTML навбара === -->
 <nav class="navbar">
     <div class="navbar-logo">
-        <img src="images/logooo.png" alt="Rhythmix Logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
     </div>
     <div class="navbar-links">
-        <a href="/login">Вход</a>
-        <a href="/register">Регистрация</a>
+        <a href="login.html">Вход</a>
+        <a href="register.html">Регистрация</a>
     </div>
 </nav>
+
 <div class="container">
     <h1>Подтвердите вашу почту</h1>
-    <div id="message" class="message" style="display: none;"></div>
+    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">Код подтверждения был отправлен на вашу электронную почту.</p>
+    <div id="message" class="message"></div>
 
     <form id="verify-form">
         <input type="email" id="email" name="email" placeholder="Ваш email" required>
         <input type="text" id="verificationCode" name="verificationCode" placeholder="Код подтверждения" required>
-        <button type="submit">Подтвердить</button>
+        <button type="submit" id="submit-btn">Подтвердить</button>
     </form>
+
+    <p class="resend-link">Не получили код? <a id="resend-code-btn">Отправить снова</a></p>
 </div>
 
+<!-- === Шаг 3: JavaScript адаптирован для блокировки кнопки === -->
 <script>
     document.getElementById("verify-form").addEventListener("submit", async function(event) {
         event.preventDefault();
-
         const data = {
             email: document.getElementById("email").value,
             verificationCode: document.getElementById("verificationCode").value
         };
+        const messageElement = document.getElementById("message");
+        const submitBtn = document.getElementById("submit-btn");
+
+        messageElement.style.display = "none";
+        submitBtn.disabled = true;
 
         try {
             const response = await fetch("http://localhost:8080/auth/verify", {
@@ -215,27 +239,57 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             });
-
             const result = await response.json();
-            const messageElement = document.getElementById("message");
-
             if (response.ok) {
-                messageElement.textContent = "Почта успешно подтверждена! Перенаправляем...";
+                messageElement.textContent = result.data.message + " Перенаправляем на страницу входа...";
                 messageElement.className = "message success";
-                messageElement.style.display = "block";
-
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 3000);
+                document.getElementById("verify-form").reset();
+                setTimeout(() => { window.location.href = "/login.html"; }, 3000);
             } else {
-                messageElement.textContent = "Ошибка: " + (result.message || "Неверный код подтверждения");
-                messageElement.className = "message error";
-                messageElement.style.display = "block";
+                throw new Error(result.data?.message || "Неверный код или email.");
             }
         } catch (error) {
-            const messageElement = document.getElementById("message");
-            messageElement.textContent = "Ошибка сети: " + error.message;
+            messageElement.textContent = "Ошибка: " + error.message;
             messageElement.className = "message error";
+        } finally {
+            submitBtn.disabled = false;
+            messageElement.style.display = "block";
+        }
+    });
+
+    document.getElementById("resend-code-btn").addEventListener("click", async function() {
+        const email = document.getElementById("email").value;
+        const messageElement = document.getElementById("message");
+        const resendBtn = this;
+
+        if (!email) {
+            messageElement.textContent = "Пожалуйста, введите ваш email для повторной отправки кода.";
+            messageElement.className = "message error";
+            messageElement.style.display = "block";
+            return;
+        }
+
+        resendBtn.style.pointerEvents = "none";
+        resendBtn.style.opacity = "0.5";
+
+        try {
+            const response = await fetch(`http://localhost:8080/auth/resend?email=${encodeURIComponent(email)}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            const result = await response.json();
+            if (response.ok) {
+                messageElement.textContent = result.data.message || "Новый код отправлен. Проверьте почту.";
+                messageElement.className = "message success";
+            } else {
+                throw new Error(result.data?.message || "Не удалось отправить код.");
+            }
+        } catch (error) {
+            messageElement.textContent = "Ошибка: " + error.message;
+            messageElement.className = "message error";
+        } finally {
+            resendBtn.style.pointerEvents = "auto";
+            resendBtn.style.opacity = "1";
             messageElement.style.display = "block";
         }
     });

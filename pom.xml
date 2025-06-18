@@ -11,10 +11,10 @@
 	</parent>
 
 	<groupId>rom41k</groupId>
-	<artifactId>Rhythmix</artifactId>
+	<artifactId>vasilek</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Rhythmix</name>
-	<description>Web music player.</description>
+	<name>Vasilek</name>
+	<description>Музыкальное стриминговое приложение "Василёк"</description>
 
 	<properties>
 		<java.version>23</java.version>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.89</version> <!-- Убедитесь, что используете актуальную версию -->
+			<version>1.12.89</version>
 		</dependency>
 
 		<dependency>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Альбом - Василёк</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5A87D0; --secondary-color: #9d79d0; --tertiary-color: #64b58e;
+            --background-color: #121212; --surface-color: #1a1a1a; --surface-highlight-color: #242424;
+            --text-color: #ffffff; --text-muted-color: #b3b3b3; --text-artist-color: #e0e0e0;
+            --border-color: #2f2f2f; --danger-color: #dc3545; --sidebar-width: 260px;
+            --player-height: 90px; --navbar-height: 85px;
+        }
+        html { box-sizing: border-box; } *, *::before, *::after { box-sizing: inherit; }
+        body { font-family: 'Arial', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 0; padding-top: var(--navbar-height); padding-bottom: var(--player-height); display: flex; overflow-x: hidden; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; height: var(--navbar-height); background-color: rgba(20, 20, 20, 0.95); display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; z-index: 1000; border-bottom: 1px solid var(--primary-color); backdrop-filter: blur(5px); }
+        .navbar-logo a { display: flex; align-items: center; } .navbar-logo img { height: 70px; width: auto; }
+        .user-dropdown { position: relative; display: inline-block; }
+        #user-menu-button { background: none; border: none; color: var(--text-muted-color); cursor: pointer; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 20px; transition: background-color 0.2s, color 0.2s; }
+        #user-menu-button:hover, .user-dropdown.active #user-menu-button { background-color: var(--surface-color); color: var(--text-color); }
+        .dropdown-arrow { font-size: 0.8em; transition: transform 0.2s ease-in-out; }
+        .user-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-content { display: none; position: absolute; background-color: var(--surface-color); min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 1; border-radius: 8px; padding: 0.5rem 0; right: 0; top: 120%; border: 1px solid var(--border-color); }
+        .dropdown-content a { color: var(--text-artist-color); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+        .dropdown-content a:hover { background-color: var(--surface-highlight-color); color: var(--primary-color); }
+        .main-layout-container { display: flex; width: 100%; flex-grow: 1; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--surface-color); padding: 1.5rem 0; height: calc(100vh - 70px - var(--player-height)); overflow-y: auto; position: fixed; top: 70px; left: 0; border-right: 1px solid var(--border-color); flex-shrink: 0; }
+        .sidebar-section { margin-bottom: 1.5rem; }
+        .sidebar-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted-color); padding: 0 1.5rem; margin-bottom: 0.75rem; font-weight: bold; letter-spacing: 0.5px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li a { display: flex; align-items: center; padding: 0.75rem 1.5rem; color: var(--text-artist-color); text-decoration: none; font-size: 0.95rem; transition: background-color 0.2s, color 0.2s; border-left: 3px solid transparent; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active-sidebar-link { background-color: var(--surface-highlight-color); color: var(--primary-color); font-weight: bold; border-left-color: var(--primary-color); }
+        .sidebar-menu li a i { margin-right: 1rem; width: 20px; text-align: center; color: var(--text-muted-color); }
+        .sidebar-menu li a:hover i, .sidebar-menu li a.active-sidebar-link i { color: var(--primary-color); }
+        .content { flex-grow: 1; padding: 2rem; margin-left: var(--sidebar-width); overflow-y: auto; overflow-x: hidden; width: calc(100% - var(--sidebar-width)); }
+        .album-header { display: flex; align-items: flex-end; gap: 1.5rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
+        .album-cover { width: 200px; height: 200px; min-width: 200px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); background-color: var(--surface-highlight-color); background-size: cover; background-position: center; }
+        .album-info { display: flex; flex-direction: column; justify-content: flex-end; }
+        .album-info .album-type { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--text-color); margin-bottom: 0.5rem; }
+        .album-info h1 { font-size: 3rem; margin: 0 0 0.5rem 0; line-height: 1.1; color: var(--text-color); }
+        .album-meta-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted-color); }
+        .album-meta-info .artist-name { font-weight: bold; color: var(--text-color); }
+        .album-meta-info a.artist-link { text-decoration: none; color: var(--text-color); }
+        .album-meta-info a.artist-link:hover { text-decoration: underline; }
+        .album-meta-info .dot-separator { font-size: 1.2rem; line-height: 1; }
+        .track-list-container { display: flex; flex-direction: column; gap: 0.75rem; }
+        .track-card { background-color: var(--surface-color); border-radius: 8px; padding: 0.75rem 1rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: background-color 0.2s, border-color 0.2s, padding-left 0.2s; border: 1px solid var(--border-color); display: flex; align-items: center; width: 100%; min-height: 80px; }
+        .track-card:hover { background-color: var(--surface-highlight-color); border-left: 3px solid var(--primary-color); padding-left: calc(1rem - 3px); }
+        .track-cover { width: 50px; height: 50px; min-width: 50px; flex-shrink: 0; background-size: cover; background-position: center; border-radius: 6px; background-color: #222; margin-right: 1rem; }
+        .track-details-wrapper { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; margin-right: 1rem; }
+        .track-info-primary h3 { margin: 0 0 0.1rem 0; font-size: 1rem; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-info-primary p.artist-name { margin: 0; font-size: 0.85rem; color: var(--text-artist-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-stats-info { display: flex; align-items: center; font-size: 0.75rem; color: var(--text-muted-color); gap: 0.75rem; margin-top: 0.3rem; }
+        .track-stats-info .stats-item i { margin-right: 3px; }
+        .track-actions-group { display: flex; align-items: center; flex-shrink: 0; margin-left: auto; }
+        .track-actions-group .play-button { background-color: var(--primary-color); color: white; border: none; padding: 0.6rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: background-color 0.3s; display: inline-flex; align-items: center; margin-right: 0.75rem; }
+        .track-actions-group .play-button:hover { background-color: #4a77c0; }
+        .track-actions-group .play-button i { margin-right: 5px; }
+        .track-meta-actions-buttons { display: flex; align-items: center; gap: 0.5rem; }
+        .track-actions-group .icon-button { background: none; border: none; color: var(--text-muted-color); font-size: 1.1rem; cursor: pointer; padding: 0.4rem; border-radius: 50%; transition: color 0.2s, background-color 0.2s, transform 0.2s; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+        .track-actions-group .icon-button:hover { color: var(--primary-color); background-color: rgba(90, 135, 208, 0.1); transform: scale(1.1); }
+        .track-actions-group .icon-button.liked { color: var(--primary-color); }
+        .track-actions-group a.icon-button { text-decoration: none; }
+        .message-area { margin-bottom: 1rem; }
+        .message { padding: .75rem; border-radius: 6px; font-size: .9rem; display: none; text-align: center; border: 1px solid;}
+        .error { background-color: rgba(90, 135, 208, 0.2); color: var(--primary-color); border-color: var(--primary-color); }
+        .success { background-color: rgba(100, 181, 142, 0.2); color: var(--tertiary-color); border-color: var(--tertiary-color); }
+        .no-tracks-placeholder { text-align: center; color: #777; padding: 3rem; border: 2px dashed #333; border-radius: 8px; margin-top: 2rem; }
+        .no-tracks-placeholder i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--surface-color); margin: auto; padding: 25px; border: 1px solid var(--border-color); width: 90%; max-width: 450px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .modal-header h2 { margin: 0; font-size: 1.3rem; color: var(--primary-color); }
+        .close-button { color: var(--text-muted-color); float: right; font-size: 1.8rem; font-weight: bold; cursor: pointer; background: none; border: none; }
+        .modal-body ul { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
+        .modal-body li { padding: 10px 12px; margin-bottom: 8px; background-color: var(--surface-highlight-color); border-radius: 6px; cursor: pointer; transition: background-color 0.2s; font-size: 0.95rem; border: 1px solid transparent; }
+        .modal-body li:hover { background-color: #2a2a2a; border-color: var(--primary-color); }
+        .modal-body .no-playlists-modal { text-align: center; color: var(--text-muted-color); padding: 15px 0; }
+        .modal-footer { margin-top: 20px; text-align: right; }
+        .modal-footer a { color: var(--primary-color); text-decoration: none; font-size: 0.9rem; }
+        .player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-height); background-color: #1c1c1c; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000; }
+        .player-info { display: flex; align-items: center; min-width: 200px; flex-shrink: 0; }
+        .player-image { width: 50px; height: 50px; border-radius: 4px; margin-right: 1rem; object-fit: cover; background-color: #333; }
+        .player-text { display: flex; flex-direction: column; overflow: hidden;}
+        .player-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .player-artist { font-size: 0.8rem; color: var(--text-muted-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .player-controls { display: flex; flex-direction: column; align-items: center; flex-grow: 1; margin: 0 1rem; min-width: 250px; max-width: 600px; }
+        .player-buttons { display: flex; align-items: center; margin-bottom: 0.5rem; }
+        .player-button { background: none; border: none; color: var(--text-muted-color); font-size: 1.1rem; cursor: pointer; padding: 0.5rem; transition: color 0.2s; }
+        .player-button.play { font-size: 1.5rem; color: var(--text-color); }
+        .player-button.active-control { color: var(--primary-color); }
+        .player-progress { display: flex; align-items: center; width: 100%; }
+        .progress-time { font-size: 0.75rem; color: var(--text-muted-color); margin: 0 0.5rem; }
+        .progress-bar { flex-grow: 1; height: 4px; background-color: #404040; border-radius: 2px; cursor: pointer; position: relative; }
+        .progress-fill { height: 100%; width: 0%; background-color: var(--primary-color); border-radius: 2px; }
+        .player-volume { display: flex; align-items: center; min-width: 120px; justify-content: flex-end; flex-shrink: 0;}
+        .volume-icon { color: var(--text-muted-color); margin-right: 0.75rem; font-size: 1rem; }
+        .volume-bar { width: 80px; height: 4px; background-color: #404040; border-radius: 2px; cursor: pointer; position: relative; }
+        .volume-fill { height: 100%; width: 70%; background-color: var(--text-color); border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
+    </div>
+    <div class="navbar-links">
+        <div class="user-dropdown">
+            <button id="user-menu-button">
+                <span id="nav-user-greeting">Привет, ...</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div id="user-dropdown-content" class="dropdown-content">
+                <a href="settings.html"><i class="fas fa-user-cog"></i> Настройки</a>
+                <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout-container">
+    <aside class="sidebar" id="main-sidebar">  </aside>
+    <main class="content">
+        <div id="album-content-container">
+            <div class="album-header">
+                <div id="album-cover" class="album-cover"></div>
+                <div class="album-info">
+                    <div class="album-type">Альбом</div>
+                    <h1 id="album-name">Загрузка...</h1>
+                    <div class="album-meta-info">
+                        <span id="album-artist-name" class="artist-name"></span>
+                        <span id="album-year"></span>
+                        <span id="album-track-count"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="message-area" id="global-message-area"></div>
+            <div id="track-list-container" class="track-list-container"></div>
+            <div id="no-tracks-in-album-message" class="no-tracks-placeholder" style="display: none;">
+                <i class="fas fa-compact-disc"></i>
+                <p>В этом альбоме пока нет треков.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="addToPlaylistModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Добавить трек в плейлист</h2>
+            <span class="close-button" id="closeAddToPlaylistModal">×</span>
+        </div>
+        <div class="modal-body">
+            <ul id="modal-playlist-list"></ul>
+            <p id="modal-no-playlists-message" class="no-playlists-modal" style="display:none;">
+                У вас нет плейлистов. <a href="create-playlist.html">Создать новый?</a>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <a href="create-playlist.html">Создать новый плейлист</a>
+        </div>
+    </div>
+</div>
+
+<div class="player">
+    <div class="player-info"> <img src="images/default-cover.png" class="player-image" id="player-current-cover"> <div class="player-text"> <div class="player-title" id="player-current-title">Название трека</div> <div class="player-artist" id="player-current-artist">Исполнитель</div> </div> </div> <div class="player-controls"> <div class="player-buttons"> <button class="player-button" id="player-shuffle" title="Перемешать"><i class="fas fa-random"></i></button> <button class="player-button" id="player-prev" title="Предыдущий трек"><i class="fas fa-step-backward"></i></button> <button class="player-button play" id="player-play-pause" title="Воспроизвести/Пауза"><i class="fas fa-play"></i></button> <button class="player-button" id="player-next" title="Следующий трек"><i class="fas fa-step-forward"></i></button> <button class="player-button" id="player-repeat" title="Повтор выключен"><i class="fas fa-redo"></i></button> </div> <div class="player-progress"> <span class="progress-time" id="player-current-time">0:00</span> <div class="progress-bar" id="player-progress-bar"> <div class="progress-fill" id="player-progress-fill"></div> </div> <span class="progress-time" id="player-duration">0:00</span> </div> </div> <div class="player-volume"> <i class="fas fa-volume-up volume-icon" id="player-volume-icon"></i> <div class="volume-bar" id="player-volume-bar"> <div class="volume-fill" id="player-volume-fill"></div> </div> </div>
+</div>
+
+<script>
+    let currentUser = null;
+    const API_BASE_URL = "http://localhost:8080";
+    let currentAudio = new Audio();
+    let currentTrackList = [];
+    let currentTrackIndex = -1;
+    let isShuffle = false;
+    let repeatMode = 0;
+    let userLikedTracks = new Set();
+    let trackIdToAddToPlaylist = null;
+    const playerElements = { playPauseBtn: document.getElementById('player-play-pause'), prevBtn: document.getElementById('player-prev'), nextBtn: document.getElementById('player-next'), shuffleBtn: document.getElementById('player-shuffle'), repeatBtn: document.getElementById('player-repeat'), progressBar: document.getElementById('player-progress-bar'), progressFill: document.getElementById('player-progress-fill'), currentTimeEl: document.getElementById('player-current-time'), durationEl: document.getElementById('player-duration'), volumeBar: document.getElementById('player-volume-bar'), volumeFill: document.getElementById('player-volume-fill'), volumeIcon: document.getElementById('player-volume-icon'), currentCover: document.getElementById('player-current-cover'), currentTitle: document.getElementById('player-current-title'), currentArtist: document.getElementById('player-current-artist') };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const albumId = urlParams.get('id');
+        if (!albumId) {
+            document.body.innerHTML = "<h1>Ошибка: ID альбома не найден в URL.</h1>";
+            return;
+        }
+
+        try {
+            currentUser = await fetchData("/api/users/me");
+            setupLayoutUI();
+
+            await Promise.all([
+                loadUserLikedTracks(),
+                loadAlbumData(albumId)
+            ]);
+
+            setupPlayerControls();
+            setupModalEventListeners();
+        } catch (error) {
+            console.error("Критическая ошибка:", error);
+            if (String(error).includes("401")) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+            }
+        }
+    });
+
+    async function loadAlbumData(albumId) {
+        try {
+            const albumData = await fetchData(`/api/albums/${albumId}`);
+            currentTrackList = albumData.tracks || [];
+            renderAlbumPage(albumData);
+        } catch(error) {
+            displayGlobalMessage(`Не удалось загрузить альбом: ${error.message}`, 'error');
+            document.getElementById('album-content-container').innerHTML = '';
+        }
+    }
+
+    async function loadUserLikedTracks() {
+        try {
+            const likedData = await fetchData("/api/track-likes/my");
+            userLikedTracks = new Set(likedData.map(like => like.trackId));
+        } catch (error) {
+            console.error("Не удалось загрузить лайки:", error);
+        }
+    }
+
+    function setupLayoutUI() {
+        if (!currentUser) return;
+        document.getElementById('nav-user-greeting').textContent = `Привет, ${currentUser.name}!`;
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userDropdownContent = document.getElementById('user-dropdown-content');
+        userMenuButton.addEventListener('click', e => { e.stopPropagation(); userMenuButton.parentElement.classList.toggle('active'); userDropdownContent.style.display = userMenuButton.parentElement.classList.contains('active') ? 'block' : 'none'; });
+        window.addEventListener('click', () => { if (userMenuButton.parentElement.classList.contains('active')) { userMenuButton.parentElement.classList.remove('active'); userDropdownContent.style.display = 'none'; } });
+        document.getElementById('logout-link').addEventListener('click', e => { e.preventDefault(); localStorage.removeItem("jwtToken"); window.location.href = "/login.html"; });
+
+        renderSidebar();
+        highlightActiveSidebarLink();
+    }
+
+    function renderSidebar() {
+        const sidebarContainer = document.getElementById('main-sidebar');
+        if (!sidebarContainer || !currentUser) return;
+        const isArtist = currentUser.role === 'ARTIST';
+        sidebarContainer.innerHTML = `
+            <div class="sidebar-section">
+                <ul class="sidebar-menu"><li><a href="main.html"><i class="fas fa-home"></i> <span>Главная</span></a></li></ul>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Моя медиатека</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="my-playlists.html"><i class="fas fa-list"></i> <span>Мои плейлисты</span></a></li>
+                    <li><a href="liked-tracks.html"><i class="fas fa-heart"></i> <span>Понравившиеся</span></a></li>
+                    <li><a href="subscriptions.html"><i class="fas fa-rss"></i> <span>Мои подписки</span></a></li>
+                </ul>
+            </div>
+            ${isArtist ? `
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Артисту</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="my-tracks-artist.html"><i class="fas fa-music"></i> <span>Мои треки</span></a></li>
+                    <li><a href="my-albums-artist.html"><i class="fas fa-compact-disc"></i> <span>Мои альбомы</span></a></li>
+                    <li><a href="artist-stats.html"><i class="fas fa-chart-line"></i> <span>Статистика</span></a></li>
+                </ul>
+            </div>` : ''}`;
+    }
+
+    function highlightActiveSidebarLink() {
+        const links = document.querySelectorAll('.sidebar-menu a');
+        links.forEach(link => link.classList.remove('active-sidebar-link'));
+
+        let activeLink;
+        const referrer = document.referrer;
+
+        if (referrer && referrer.includes('my-albums-artist.html')) {
+            activeLink = document.querySelector('a[href="my-albums-artist.html"]');
+        } else {
+            activeLink = document.querySelector('a[href="main.html"]');
+        }
+
+        if (activeLink) {
+            activeLink.classList.add('active-sidebar-link');
+        }
+    }
+
+    function renderAlbumPage(album) {
+        document.title = `${album.name} - Василёк`;
+        const coverUrl = album.tracks?.[0]?.coverPath ? `${API_BASE_URL}${album.tracks[0].coverPath}` : 'images/default-cover.png';
+        document.getElementById('album-cover').style.backgroundImage = `url('${coverUrl}')`;
+        document.getElementById('album-name').textContent = album.name;
+        document.getElementById('album-artist-name').innerHTML = `<a href="artist.html?id=${album.artistId}" class="artist-link">${album.artistName}</a>`;
+        document.getElementById('album-year').textContent = `• ${new Date(album.createdAt).getFullYear()}`;
+        document.getElementById('album-track-count').textContent = `• ${album.tracks.length} треков`;
+        renderTrackList(album.tracks);
+    }
+
+    function renderTrackList(tracks) {
+        const container = document.getElementById('track-list-container');
+        placeholder = document.getElementById('no-tracks-in-album-message');
+        container.innerHTML = '';
+        if (!tracks || tracks.length === 0) { placeholder.style.display = 'block'; return; }
+        placeholder.style.display = 'none';
+        tracks.forEach((track, index) => { container.insertAdjacentHTML('beforeend', createTrackCardHTML(track, index)); });
+        rebindTrackActionHandlers(container);
+    }
+
+    function createTrackCardHTML(track, index) {
+        const isLiked = userLikedTracks.has(track.id);
+        const downloadUrl = `${API_BASE_URL}/api/tracks/${track.id}/download`;
+        return `
+            <div class="track-card" data-track-id="${track.id}" data-track-index="${index}">
+                <div class="track-cover" style="background-image: url('${API_BASE_URL}${track.coverPath || '/images/default-cover.png'}')"></div>
+                <div class="track-details-wrapper">
+                    <div class="track-info-primary"><h3>${track.title}</h3><p class="artist-name">${track.artist.name}</p></div>
+                    <div class="track-stats-info"><span class="stats-item"><i class="fas fa-headphones"></i> ${track.listensCount || 0}</span><span class="stats-item likes-count-display"><i class="fas fa-heart"></i> ${track.likesCount || 0}</span></div>
+                </div>
+                <div class="track-actions-group">
+                    <button class="play-button"><i class="fas fa-play"></i> Play</button>
+                    <div class="track-meta-actions-buttons">
+                        <button class="icon-button like-button ${isLiked ? 'liked' : ''}" title="${isLiked ? 'Убрать лайк' : 'Лайкнуть'}"><i class="${isLiked ? 'fas fa-heart' : 'far fa-heart'}"></i></button>
+                        <button class="icon-button add-to-playlist-button" title="Добавить в плейлист"><i class="fas fa-plus-square"></i></button>
+                        <a href="${downloadUrl}" class="icon-button" download title="Скачать"><i class="fas fa-download"></i></a>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function rebindTrackActionHandlers(container) {
+        container.querySelectorAll('.play-button').forEach(btn => btn.addEventListener('click', e => { playTrackFromList(parseInt(e.currentTarget.closest('.track-card').dataset.trackIndex)); }));
+        container.querySelectorAll('.like-button').forEach(btn => btn.addEventListener('click', handleLikeButtonClick));
+        container.querySelectorAll('.add-to-playlist-button').forEach(btn => btn.addEventListener('click', e => { trackIdToAddToPlaylist = Number(e.currentTarget.closest('.track-card').dataset.trackId); openAddToPlaylistModal(); }));
+    }
+
+    async function handleLikeButtonClick(event) {
+        const button = event.currentTarget, trackCard = button.closest('.track-card'), trackId = Number(trackCard.dataset.trackId);
+        if(!currentUser) return;
+        const isCurrentlyLiked = userLikedTracks.has(trackId);
+        const icon = button.querySelector('i'), likesCountEl = trackCard.querySelector('.likes-count-display');
+        let currentLikes = parseInt(likesCountEl.innerText.trim()) || 0;
+        button.classList.toggle('liked', !isCurrentlyLiked);
+        icon.className = isCurrentlyLiked ? 'far fa-heart' : 'fas fa-heart';
+        likesCountEl.innerHTML = `<i class="fas fa-heart"></i> ${isCurrentlyLiked ? currentLikes - 1 : currentLikes + 1}`;
+        try {
+            if (isCurrentlyLiked) {
+                await fetchData(`/api/track-likes?trackId=${trackId}`, "Ошибка", { method: 'DELETE' });
+                userLikedTracks.delete(trackId);
+            } else {
+                await fetchData(`/api/track-likes`, "Ошибка", { method: 'POST', body: JSON.stringify({ track: { id: trackId } }) });
+                userLikedTracks.add(trackId);
+            }
+        } catch (error) {
+            displayGlobalMessage(error.message, 'error');
+            button.classList.toggle('liked', isCurrentlyLiked);
+            icon.className = isCurrentlyLiked ? 'fas fa-heart' : 'far fa-heart';
+            likesCountEl.innerHTML = `<i class="fas fa-heart"></i> ${currentLikes}`;
+        }
+    }
+
+    function setupModalEventListeners() { document.getElementById('closeAddToPlaylistModal').addEventListener('click', closeAddToPlaylistModal); window.addEventListener('click', (event) => { if (event.target == document.getElementById('addToPlaylistModal')) closeAddToPlaylistModal(); }); }
+    async function openAddToPlaylistModal() {
+        const modal = document.getElementById('addToPlaylistModal'), list = document.getElementById('modal-playlist-list');
+        list.innerHTML = '<p>Загрузка...</p>'; modal.style.display = 'flex';
+        try {
+            const playlists = await fetchData("/api/playlists/my");
+            list.innerHTML = '';
+            if (!playlists || playlists.length === 0) { document.getElementById('modal-no-playlists-message').style.display = 'block'; }
+            else {
+                document.getElementById('modal-no-playlists-message').style.display = 'none';
+                playlists.forEach(playlist => {
+                    const li = document.createElement('li'); li.textContent = playlist.name;
+                    const trackInPlaylist = playlist.tracks?.some(t => t.id === trackIdToAddToPlaylist);
+                    if (trackInPlaylist) { li.style.opacity = "0.5"; li.style.cursor = "not-allowed"; }
+                    else { li.addEventListener('click', () => handleAddTrackToSpecificPlaylist(playlist.id, trackIdToAddToPlaylist)); }
+                    list.appendChild(li);
+                });
+            }
+        } catch (error) { list.innerHTML = `<p>Ошибка: ${error.message}</p>`; }
+    }
+    function closeAddToPlaylistModal() { document.getElementById('addToPlaylistModal').style.display = 'none'; trackIdToAddToPlaylist = null; }
+    async function handleAddTrackToSpecificPlaylist(playlistId, trackId) { try { await fetchData(`/api/playlists/${playlistId}/add-track/${trackId}`, "Ошибка", { method: 'PUT' }); displayGlobalMessage('Трек добавлен в плейлист!', 'success'); closeAddToPlaylistModal(); } catch (e) { displayGlobalMessage('Ошибка добавления трека', 'error'); } }
+
+    async function fetchData(endpoint, errorMessage = "Ошибка", options = {}) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) throw new Error("401");
+        options.headers = { 'Authorization': `Bearer ${token}`, ...options.headers };
+        if (options.body && !options.headers['Content-Type']) {
+            options.headers['Content-Type'] = 'application/json';
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+            if(response.status === 401) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+            }
+            if (!response.ok) {
+                const errData = await response.json().catch(()=>({}));
+                throw new Error(errData.message || `${errorMessage}: Статус ${response.status}`);
+            }
+            return response.status === 204 ? null : await response.json();
+        } catch (error) { console.error(`Ошибка: ${endpoint}`, error); throw error; }
+    }
+    function displayGlobalMessage(message, type = 'error') {
+        const area = document.getElementById('global-message-area');
+        if(area) { area.innerHTML = `<div class="message ${type}" style="display:block;">${message}</div>`; setTimeout(() => area.innerHTML = '', 4000); }
+    }
+
+    function setupPlayerControls() { playerElements.playPauseBtn.addEventListener('click', togglePlayPause); playerElements.nextBtn.addEventListener('click', playNextTrack); playerElements.prevBtn.addEventListener('click', playPrevTrack); playerElements.shuffleBtn.addEventListener('click', toggleShuffle); playerElements.repeatBtn.addEventListener('click', cycleRepeatMode); currentAudio.addEventListener('timeupdate', updatePlayerProgress); currentAudio.addEventListener('loadedmetadata', updatePlayerDuration); currentAudio.addEventListener('ended', handleTrackEnd); currentAudio.addEventListener('play', () => playerElements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>'); currentAudio.addEventListener('pause', () => playerElements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'); playerElements.progressBar.addEventListener('click', e => { if (isNaN(currentAudio.duration)) return; const rect = playerElements.progressBar.getBoundingClientRect(); currentAudio.currentTime = ((e.clientX - rect.left) / rect.width) * currentAudio.duration; }); playerElements.volumeBar.addEventListener('click', e => { const rect = playerElements.volumeBar.getBoundingClientRect(); const vol = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)); currentAudio.volume = vol; playerElements.volumeFill.style.width = `${vol*100}%`; updateVolumeIcon(vol); }); currentAudio.volume = 0.7; playerElements.volumeFill.style.width = '70%'; updateVolumeIcon(0.7);}
+    function playTrackFromList(index) { if (index < 0 || index >= currentTrackList.length) return; currentTrackIndex = index; const track = currentTrackList[currentTrackIndex]; currentAudio.src = `${API_BASE_URL}${track.filePath}`; currentAudio.play(); updatePlayerUI(track); fetch(`${API_BASE_URL}/api/tracks/${track.id}/listen`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${localStorage.getItem("jwtToken")}` } }); }
+    function updatePlayerUI(track) { playerElements.currentCover.src = `${API_BASE_URL}${track.coverPath || '/images/default-cover.png'}`; playerElements.currentTitle.textContent = track.title; playerElements.currentArtist.textContent = track.artist.name; }
+    function togglePlayPause() { if (!currentAudio.src) { if (currentTrackList.length > 0) playTrackFromList(0); } else { currentAudio.paused ? currentAudio.play() : currentAudio.pause(); } }
+    function playNextTrack() { if (currentTrackList.length === 0) return; let nextIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex + 1) % currentTrackList.length; playTrackFromList(nextIndex); }
+    function playPrevTrack() { if (currentTrackList.length === 0) return; if (currentAudio.currentTime > 3) { currentAudio.currentTime = 0; } else { let prevIndex = (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length; playTrackFromList(prevIndex); } }
+    function handleTrackEnd() { if (repeatMode === 2) { currentAudio.currentTime = 0; currentAudio.play(); } else if (repeatMode === 1) { playNextTrack(); } else if (isShuffle || currentTrackIndex < currentTrackList.length - 1) { playNextTrack(); } }
+    function toggleShuffle() { isShuffle = !isShuffle; playerElements.shuffleBtn.classList.toggle('active-control', isShuffle); }
+    function cycleRepeatMode() { repeatMode = (repeatMode + 1) % 3; const icons = ['fa-redo', 'fa-redo-alt', 'fa-retweet']; playerElements.repeatBtn.innerHTML = `<i class="fas ${icons[repeatMode]}"></i>`; playerElements.repeatBtn.classList.toggle('active-control', repeatMode !== 0); }
+    function formatTime(s) { return isNaN(s) ? "0:00" : `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`; }
+    function updatePlayerDuration() { if (!isNaN(currentAudio.duration)) playerElements.durationEl.textContent = formatTime(currentAudio.duration); }
+    function updatePlayerProgress() { if (!isNaN(currentAudio.duration) && currentAudio.duration > 0) { playerElements.currentTimeEl.textContent = formatTime(currentAudio.currentTime); playerElements.progressFill.style.width = `${(currentAudio.currentTime / currentAudio.duration) * 100}%`; } }
+    function updateVolumeIcon(vol) { if (!playerElements.volumeIcon) return; playerElements.volumeIcon.className = `fas volume-icon ${vol === 0 ? 'fa-volume-mute' : (vol < 0.5 ? 'fa-volume-down' : 'fa-volume-up')}`; }
+</script>
+</body>
+</html>

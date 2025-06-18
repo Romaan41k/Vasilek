@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузить трек - Василёк</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5A87D0;
+            --secondary-color: #9d79d0;
+            --tertiary-color: #64b58e;
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --surface-highlight-color: #242424;
+            --text-color: #ffffff;
+            --text-muted-color: #b3b3b3;
+            --text-artist-color: #e0e0e0;
+            --border-color: #2f2f2f;
+            --sidebar-width: 260px;
+            --player-height: 90px;
+            --navbar-height: 85px;
+            --content-padding: 1.5rem;
+        }
+
+        html { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: inherit; }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: var(--navbar-height);
+        }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--navbar-height);
+            background-color: rgba(20, 20, 20, 0.95); display: flex;
+            justify-content: space-between; align-items: center;
+            padding: 0 var(--content-padding);
+            z-index: 1000;
+            border-bottom: 1px solid var(--primary-color); backdrop-filter: blur(5px);
+        }
+        .navbar-logo a { display: flex; align-items: center; }
+        .navbar-logo img { height: 70px; width: auto; }
+        .navbar-links { display: flex; align-items: center; gap: 1rem; }
+
+        .user-dropdown { position: relative; display: inline-block; }
+        #user-menu-button { background: none; border: none; color: var(--text-muted-color); cursor: pointer; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 20px; transition: background-color 0.2s, color 0.2s; }
+        #user-menu-button:hover, .user-dropdown.active #user-menu-button { background-color: var(--surface-color); color: var(--text-color); }
+        .dropdown-arrow { font-size: 0.8em; transition: transform 0.2s ease-in-out; }
+        .user-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-content { display: none; position: absolute; background-color: var(--surface-color); min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4); z-index: 1; border-radius: 8px; padding: 0.5rem 0; right: 0; top: 120%; border: 1px solid var(--border-color); }
+        .dropdown-content a { color: var(--text-artist-color); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+        .dropdown-content a:hover { background-color: var(--surface-highlight-color); color: var(--primary-color); }
+
+        .main-layout-container {
+            display: flex; flex-grow: 1;
+            margin-top: var(--navbar-height); width: 100%;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width); min-width: var(--sidebar-width);
+            background-color: var(--surface-color);
+            padding: 1.5rem 0;
+            height: calc(100vh - var(--navbar-height));
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            flex-shrink: 0; position: fixed;
+            top: var(--navbar-height); left: 0; bottom: 0;
+        }
+        .sidebar-section { margin-bottom: 1.5rem; }
+        .sidebar-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted-color); padding: 0 1.5rem; margin-bottom: 0.75rem; font-weight: bold; letter-spacing: 0.5px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li a { display: flex; align-items: center; padding: 0.75rem 1.5rem; color: var(--text-artist-color); text-decoration: none; font-size: 0.95rem; transition: background-color 0.2s, color 0.2s; border-left: 3px solid transparent; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active-sidebar-link { background-color: var(--surface-highlight-color); color: var(--primary-color); font-weight: bold; border-left-color: var(--primary-color); }
+        .sidebar-menu li a i { margin-right: 1rem; width: 20px; text-align: center; color: var(--text-muted-color); }
+        .sidebar-menu li a:hover i, .sidebar-menu li a.active-sidebar-link i { color: var(--primary-color); }
+
+        .content {
+            flex-grow: 1; padding: var(--content-padding);
+            margin-left: var(--sidebar-width);
+            overflow-y: auto; overflow-x: hidden;
+        }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 1rem;
+        }
+        .page-header h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+
+        .upload-form-container {
+            background-color: var(--surface-color);
+            padding: 2rem; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            max-width: 600px; margin: 0 auto;
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; color: var(--text-muted-color); margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; }
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%; padding: 0.75rem;
+            border: 1px solid var(--border-color); border-radius: 6px;
+            background-color: var(--surface-highlight-color);
+            color: var(--text-color); font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(90, 135, 208, 0.2); }
+        .form-group input[type="file"] { padding: 0.5rem; }
+        .form-group input[type="file"]::file-selector-button {
+            background-color: var(--primary-color); color: white;
+            border: none; padding: 0.6rem 1rem;
+            border-radius: 4px; cursor: pointer;
+            margin-right: 1rem; transition: background-color 0.2s;
+        }
+        .form-group input[type="file"]::file-selector-button:hover { background-color: #4a77c0; }
+
+        .cover-preview-container { margin-top: 0.75rem; text-align: center; }
+        #cover-preview { max-width: 150px; max-height: 150px; border-radius: 6px; border: 1px solid var(--border-color); object-fit: cover; display: none; }
+        #cover-preview.has-image { display: inline-block; }
+
+        .submit-button {
+            width: 100%; padding: 0.85rem;
+            background-color: var(--primary-color); border: none;
+            color: white; font-weight: bold;
+            border-radius: 6px; cursor: pointer;
+            margin-top: 1.5rem; font-size: 1.05rem;
+            transition: background-color 0.3s, transform 0.2s;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .submit-button:hover { background-color: #4a77c0; transform: translateY(-1px); }
+        .submit-button:disabled { background-color: #555; cursor: not-allowed; transform: none; }
+        .submit-button .spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; margin-left: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .message-area { margin-top: 1rem; margin-bottom: 1rem; }
+        .message { padding: .85rem 1rem; border-radius: 6px; font-size: .95rem; display: none; text-align: center; border-width: 1px; border-style: solid; }
+        .success { background-color: rgba(100, 181, 142, 0.2); color: var(--tertiary-color); border-color: var(--tertiary-color); }
+        .error { background-color: rgba(220, 53, 69, 0.15); color: #dc3545; border-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
+    </div>
+    <div class="navbar-links">
+        <div class="user-dropdown">
+            <button id="user-menu-button" class="navbar-user-greeting">
+                <span id="nav-user-greeting">Привет, ...</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div id="user-dropdown-content" class="dropdown-content">
+                <a href="settings.html"><i class="fas fa-user-cog"></i> Настройки</a>
+                <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout-container">
+    <aside class="sidebar" id="main-sidebar">
+        <!-- JS сгенерирует сайдбар здесь -->
+    </aside>
+
+    <main class="content">
+        <div class="page-header">
+            <h1>Загрузить новый трек</h1>
+        </div>
+
+        <div class="upload-form-container">
+            <div id="upload-message-area" class="message-area"></div>
+            <form id="upload-track-form">
+                <div class="form-group">
+                    <label for="title">Название трека <span style="color:var(--primary-color)">*</span></label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="genre">Жанр <span style="color:var(--primary-color)">*</span></label>
+                    <input type="text" id="genre" name="genre" required>
+                </div>
+                <div class="form-group">
+                    <label for="audioFile">Аудиофайл (MP3, WAV, M4A) <span style="color:var(--primary-color)">*</span></label>
+                    <input type="file" id="audioFile" name="file" accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4" required>
+                    <small id="audio-file-info" style="color: var(--text-muted-color); font-size: 0.8rem; margin-top: 0.3rem; display: block;"></small>
+                </div>
+                <div class="form-group">
+                    <label for="coverFile">Обложка трека (JPG, PNG, WEBP - необязательно, макс. 2MB)</label>
+                    <input type="file" id="coverFile" name="cover" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                    <div class="cover-preview-container">
+                        <img id="cover-preview" src="images/default-cover.png" alt="Предпросмотр обложки">
+                    </div>
+                    <small id="cover-file-info" style="color: var(--text-muted-color); font-size: 0.8rem; margin-top: 0.3rem; display: block;"></small>
+                </div>
+                <button type="submit" id="submit-upload-btn" class="submit-button">
+                    Загрузить трек
+                    <span class="spinner" style="display: none;"></span>
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- === Шаг 3: Адаптация JavaScript === -->
+<script>
+    let currentUser = null;
+    const API_BASE_URL = "http://localhost:8080";
+    const MAX_COVER_SIZE_MB = 2;
+    const MAX_AUDIO_SIZE_MB = 25;
+
+    const uploadForm = document.getElementById('upload-track-form');
+    const titleInput = document.getElementById('title');
+    const genreInput = document.getElementById('genre');
+    const audioFileInput = document.getElementById('audioFile');
+    const coverFileInput = document.getElementById('coverFile');
+    const coverPreview = document.getElementById('cover-preview');
+    const submitButton = document.getElementById('submit-upload-btn');
+    const messageArea = document.getElementById('upload-message-area');
+    const audioFileInfoEl = document.getElementById('audio-file-info');
+    const coverFileInfoEl = document.getElementById('cover-file-info');
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) { window.location.href = "/login.html"; return; }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/me`, { headers: { "Authorization": `Bearer ${token}` } });
+            if (!response.ok) { localStorage.removeItem("jwtToken"); window.location.href = "/login.html"; return; }
+            currentUser = await response.json();
+
+            setupLayoutUI(currentUser);
+            setupFormEventListeners();
+
+            if (currentUser.role !== 'ARTIST') {
+                displayUploadMessage("Только артисты могут загружать треки.", "error");
+                submitButton.disabled = true;
+                Array.from(uploadForm.elements).forEach(el => el.disabled = true);
+            }
+        } catch (error) {
+            console.error("Ошибка инициализации страницы:", error);
+            displayUploadMessage("Не удалось загрузить информацию о пользователе.", "error");
+            submitButton.disabled = true;
+        }
+    });
+
+    function setupLayoutUI(user) {
+        const userGreeting = document.getElementById('nav-user-greeting');
+        if (userGreeting) userGreeting.textContent = `Привет, ${user.name}!`;
+        setupDropdownMenu();
+        renderSidebar();
+        highlightActiveSidebarLink();
+    }
+
+    function setupDropdownMenu() {
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userDropdownContent = document.getElementById('user-dropdown-content');
+        const logoutLink = document.getElementById('logout-link');
+
+        if (userMenuButton) {
+            userMenuButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                this.parentElement.classList.toggle('active');
+                userDropdownContent.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';
+            });
+        }
+        window.addEventListener('click', function(event) {
+            if (userMenuButton && !userMenuButton.contains(event.target) && userMenuButton.parentElement.classList.contains('active')) {
+                userMenuButton.parentElement.classList.remove('active');
+                if(userDropdownContent) userDropdownContent.style.display = 'none';
+            }
+        });
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+            });
+        }
+    }
+
+    function renderSidebar() {
+        const sidebarContainer = document.getElementById('main-sidebar');
+        const isArtist = currentUser.role === 'ARTIST';
+        sidebarContainer.innerHTML = `
+            <div class="sidebar-section">
+                <ul class="sidebar-menu">
+                    <li><a href="main.html"><i class="fas fa-home"></i> <span>Главная</span></a></li>
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Моя медиатека</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="my-playlists.html"><i class="fas fa-list"></i> <span>Мои плейлисты</span></a></li>
+                    <li><a href="liked-tracks.html"><i class="fas fa-heart"></i> <span>Понравившиеся</span></a></li>
+                    <li><a href="subscriptions.html"><i class="fas fa-rss"></i> <span>Мои подписки</span></a></li>
+                </ul>
+            </div>
+            ${isArtist ? `
+            <div class="sidebar-section" id="artist-section-sidebar">
+                <h3 class="sidebar-title">Артисту</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="my-tracks-artist.html"><i class="fas fa-music"></i> <span>Мои треки</span></a></li>
+                    <li><a href="my-albums-artist.html"><i class="fas fa-compact-disc"></i> <span>Мои альбомы</span></a></li>
+                    <li><a href="artist-stats.html"><i class="fas fa-chart-line"></i> <span>Статистика</span></a></li>
+                    <li><a href="upload-track.html"><i class="fas fa-upload"></i> <span>Загрузить трек</span></a></li>
+                </ul>
+            </div>` : ''}
+        `;
+    }
+
+    function highlightActiveSidebarLink() {
+        const currentPageFile = window.location.pathname.split('/').pop();
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+        sidebarLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPageFile) {
+                link.classList.add('active-sidebar-link');
+            } else {
+                link.classList.remove('active-sidebar-link');
+            }
+        });
+    }
+
+    function setupFormEventListeners() {
+        if (coverFileInput) coverFileInput.addEventListener('change', handleCoverPreview);
+        if (audioFileInput) audioFileInput.addEventListener('change', handleAudioFileInfo);
+        if (uploadForm) uploadForm.addEventListener('submit', handleTrackUpload);
+    }
+
+    function displayUploadMessage(message, type = 'success') {
+        messageArea.innerHTML = `<div class="message ${type}" style="display:block;">${message}</div>`;
+        if (type === 'success') {
+            setTimeout(() => { messageArea.innerHTML = ''; }, 5000);
+        }
+    }
+
+    function handleCoverPreview(event) {
+        const file = event.target.files[0];
+        if (coverFileInfoEl) coverFileInfoEl.textContent = '';
+        coverPreview.style.display = 'none';
+        coverPreview.classList.remove('has-image');
+        if (file) {
+            if (file.size > MAX_COVER_SIZE_MB * 1024 * 1024) {
+                if (coverFileInfoEl) coverFileInfoEl.textContent = `Файл слишком большой (макс. ${MAX_COVER_SIZE_MB}MB).`;
+                coverFileInput.value = ""; return;
+            }
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!validImageTypes.includes(file.type)) {
+                if (coverFileInfoEl) coverFileInfoEl.textContent = 'Неверный формат файла (JPG, PNG, WEBP).';
+                coverFileInput.value = ""; return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                coverPreview.src = e.target.result;
+                coverPreview.style.display = 'inline-block';
+                coverPreview.classList.add('has-image');
+            }
+            reader.readAsDataURL(file);
+            if (coverFileInfoEl) coverFileInfoEl.textContent = `Выбран файл: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        } else {
+            coverPreview.src = '';
+        }
+    }
+
+    function handleAudioFileInfo(event) {
+        const file = event.target.files[0];
+        if (audioFileInfoEl) audioFileInfoEl.textContent = '';
+        if (file) {
+            if (file.size > MAX_AUDIO_SIZE_MB * 1024 * 1024) {
+                if (audioFileInfoEl) audioFileInfoEl.textContent = `Файл слишком большой (макс. ${MAX_AUDIO_SIZE_MB}MB).`;
+                audioFileInput.value = ""; return;
+            }
+            const validAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', '.mp3', '.wav', '.m4a'];
+            let isValidType = validAudioTypes.some(type => file.type.startsWith(type) || file.name.toLowerCase().endsWith(type));
+            if (!isValidType) {
+                if (audioFileInfoEl) audioFileInfoEl.textContent = 'Неверный формат аудиофайла (MP3, WAV, M4A).';
+                audioFileInput.value = ""; return;
+            }
+            if (audioFileInfoEl) audioFileInfoEl.textContent = `Выбран файл: ${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB)`;
+        }
+    }
+
+    async function handleTrackUpload(event) {
+        event.preventDefault();
+        messageArea.innerHTML = '';
+
+        if (currentUser.role !== 'ARTIST') {
+            displayUploadMessage("Только артисты могут загружать треки.", "error"); return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', titleInput.value.trim());
+        formData.append('genre', genreInput.value.trim());
+
+        if (audioFileInput.files.length === 0) {
+            displayUploadMessage("Пожалуйста, выберите аудиофайл.", "error"); return;
+        }
+        const audioFile = audioFileInput.files[0];
+        if (audioFile.size > MAX_AUDIO_SIZE_MB * 1024 * 1024) {
+            displayUploadMessage(`Аудиофайл слишком большой (макс. ${MAX_AUDIO_SIZE_MB}MB).`, "error"); return;
+        }
+        formData.append('file', audioFile);
+
+        if (coverFileInput.files.length > 0) {
+            const coverFile = coverFileInput.files[0];
+            if (coverFile.size > MAX_COVER_SIZE_MB * 1024 * 1024) {
+                displayUploadMessage(`Файл обложки слишком большой (макс. ${MAX_COVER_SIZE_MB}MB).`, "error"); return;
+            }
+            formData.append('cover', coverFile);
+        }
+
+        submitButton.disabled = true;
+        const spinner = submitButton.querySelector('.spinner');
+        if(spinner) spinner.style.display = 'inline-block';
+
+        try {
+            const token = localStorage.getItem("jwtToken");
+            const response = await fetch(`${API_BASE_URL}/api/tracks/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+
+            if (response.ok) {
+
+                const trackData = await response.json();
+                displayUploadMessage(`Трек "${trackData.title}" успешно загружен!`, 'success');
+
+                uploadForm.reset();
+                coverPreview.src = '';
+                coverPreview.style.display = 'none';
+                if (audioFileInfoEl) audioFileInfoEl.textContent = '';
+                if (coverFileInfoEl) coverFileInfoEl.textContent = '';
+
+                setTimeout(() => { window.location.href = "/my-tracks-artist.html"; }, 2000);
+
+            } else {
+                let errorMessage = "Не удалось загрузить трек.";
+                try {
+                    const errorJson = await response.json();
+                    errorMessage = errorJson.message || errorJson.error || errorMessage;
+                } catch (e) {
+                    const errorText = await response.text();
+                    if (errorText) errorMessage = errorText;
+                }
+                displayUploadMessage(errorMessage, 'error');
+            }
+
+
+        } catch (error) {
+            console.error("Ошибка при загрузке трека:", error);
+            displayUploadMessage("Произошла сетевая ошибка или ошибка сервера.", 'error');
+        } finally {
+            submitButton.disabled = false;
+            if(spinner) spinner.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

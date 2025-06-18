@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать плейлист - Василёк</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5A87D0;
+            --secondary-color: #9d79d0;
+            --tertiary-color: #64b58e;
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --surface-highlight-color: #242424;
+            --text-color: #ffffff;
+            --text-muted-color: #b3b3b3;
+            --text-artist-color: #e0e0e0;
+            --border-color: #2f2f2f;
+            --sidebar-width: 260px;
+            --player-height: 90px;
+            --navbar-height: 85px;
+            --content-padding: 1.5rem;
+        }
+
+        html { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: inherit; }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--navbar-height);
+            background-color: rgba(20, 20, 20, 0.95); display: flex;
+            justify-content: space-between; align-items: center;
+            padding: 0 var(--content-padding);
+            z-index: 1000;
+            border-bottom: 1px solid var(--primary-color); backdrop-filter: blur(5px);
+        }
+        .navbar-logo a { display: flex; align-items: center; }
+        .navbar-logo img { height: 70px; width: auto; }
+        .navbar-links { display: flex; align-items: center; gap: 1rem; }
+
+        .user-dropdown { position: relative; display: inline-block; }
+        #user-menu-button {
+            background: none; border: none; color: var(--text-muted-color);
+            cursor: pointer; font-size: 0.95rem; font-weight: 500;
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem; border-radius: 20px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        #user-menu-button:hover, .user-dropdown.active #user-menu-button {
+            background-color: var(--surface-color); color: var(--text-color);
+        }
+        .dropdown-arrow { font-size: 0.8em; transition: transform 0.2s ease-in-out; }
+        .user-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-content {
+            display: none; position: absolute; background-color: var(--surface-color);
+            min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+            z-index: 1; border-radius: 8px; padding: 0.5rem 0; right: 0;
+            top: 120%; border: 1px solid var(--border-color);
+        }
+        .dropdown-content a {
+            color: var(--text-artist-color); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem;
+        }
+        .dropdown-content a:hover {
+            background-color: var(--surface-highlight-color); color: var(--primary-color);
+        }
+
+        .main-layout-container {
+            display: flex; flex-grow: 1; margin-top: var(--navbar-height);
+            width: 100%; overflow: hidden; padding-bottom: var(--player-height);
+        }
+        .sidebar {
+            width: var(--sidebar-width); min-width: var(--sidebar-width);
+            background-color: var(--surface-color); padding: 1.5rem 0;
+            height: calc(100vh - var(--navbar-height) - var(--player-height));
+            overflow-y: auto; border-right: 1px solid var(--border-color);
+            flex-shrink: 0; position: fixed; top: var(--navbar-height);
+            left: 0; bottom: var(--player-height);
+        }
+        .sidebar-section { margin-bottom: 1.5rem; }
+        .sidebar-title {
+            font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted-color);
+            padding: 0 1.5rem; margin-bottom: 0.75rem; font-weight: bold; letter-spacing: 0.5px;
+        }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li a {
+            display: flex; align-items: center; padding: 0.75rem 1.5rem;
+            color: var(--text-artist-color); text-decoration: none; font-size: 0.95rem;
+            transition: background-color 0.2s, color 0.2s; border-left: 3px solid transparent;
+        }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active-sidebar-link {
+            background-color: var(--surface-highlight-color); color: var(--primary-color);
+            font-weight: bold; border-left-color: var(--primary-color);
+        }
+        .sidebar-menu li a i {
+            margin-right: 1rem; width: 20px; text-align: center; color: var(--text-muted-color);
+        }
+        .sidebar-menu li a:hover i, .sidebar-menu li a.active-sidebar-link i { color: var(--primary-color); }
+
+        .content {
+            flex-grow: 1; padding: var(--content-padding); margin-left: var(--sidebar-width);
+            overflow-y: auto; overflow-x: hidden;
+        }
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 1rem;
+        }
+        .page-header h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+
+        .form-container {
+            background-color: var(--surface-color); padding: 2rem; border-radius: 8px;
+            max-width: 600px; margin: 2rem auto; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .form-container h2 {
+            text-align: center; font-size: 1.6rem; margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-size: 0.9rem; color: var(--text-muted-color);
+        }
+        .form-group input[type="text"] {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 6px; background-color: var(--surface-highlight-color);
+            color: var(--text-color); font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+        }
+        .form-group input[type="text"]:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(90, 135, 208, 0.2);
+        }
+        .submit-button {
+            display: block; width: 100%; padding: 0.85rem;
+            background-color: var(--primary-color); color: white;
+            font-weight: bold; border: none; border-radius: 6px; cursor: pointer;
+            font-size: 1rem; transition: background-color 0.2s, transform 0.1s;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1rem;
+        }
+        .submit-button:hover { background-color: #4a77c0; }
+        .submit-button:active { transform: scale(0.98); }
+        .submit-button:disabled { background-color: #555; cursor: not-allowed; transform: none; }
+
+        .message-area { margin-bottom: 1rem; min-height: 40px; }
+        .message { padding: .75rem; border-radius: 6px; font-size: .9rem; display: none; text-align: center; }
+        .success { background-color: rgba(100, 181, 142, 0.2); color: var(--tertiary-color); border: 1px solid var(--tertiary-color); }
+        .error { background-color: rgba(90, 135, 208, 0.2); color: var(--primary-color); border: 1px solid var(--primary-color); }
+        .info { background-color: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid #17a2b8; }
+
+        .player {
+            position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-height);
+            background-color: #1c1c1c; border-top: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.5rem; z-index: 1000;
+        }
+        .player-info { display: flex; align-items: center; min-width: 200px; flex-shrink: 0; }
+        .player-image { width: 50px; height: 50px; border-radius: 4px; margin-right: 1rem; object-fit: cover; background-color: #333; }
+        .player-text { display: flex; flex-direction: column; overflow: hidden;}
+        .player-title { font-size: 0.9rem; font-weight: 500; color: var(--text-color); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .player-artist { font-size: 0.8rem; color: var(--text-muted-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .player-controls {
+            display: flex; flex-direction: column; align-items: center; flex-grow: 1;
+            margin: 0 1rem; min-width: 250px; max-width: 600px;
+        }
+        .player-buttons { display: flex; align-items: center; margin-bottom: 0.5rem; }
+        .player-button { background: none; border: none; color: var(--text-muted-color); font-size: 1.1rem; cursor: pointer; padding: 0.5rem; transition: color 0.2s; }
+        .player-button:hover { color: var(--text-color); }
+        .player-button.play { font-size: 1.5rem; color: var(--text-color); }
+        .player-button.play:hover { color: var(--primary-color); }
+        .player-button.active-control { color: var(--primary-color); }
+        .player-progress { display: flex; align-items: center; width: 100%; }
+        .progress-time { font-size: 0.75rem; color: var(--text-muted-color); margin: 0 0.5rem; }
+        .progress-bar { flex-grow: 1; height: 4px; background-color: #404040; border-radius: 2px; cursor: pointer; position: relative; }
+        .progress-fill { height: 100%; width: 0%; background-color: var(--primary-color); border-radius: 2px; }
+        .player-volume { display: flex; align-items: center; min-width: 120px; justify-content: flex-end; flex-shrink: 0;}
+        .volume-icon { color: var(--text-muted-color); margin-right: 0.75rem; font-size: 1rem; }
+        .volume-bar { width: 80px; height: 4px; background-color: #404040; border-radius: 2px; cursor: pointer; position: relative; }
+        .volume-fill { height: 100%; width: 70%; background-color: var(--text-color); border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
+    </div>
+    <div class="navbar-links">
+        <div class="user-dropdown">
+            <button id="user-menu-button" class="navbar-user-greeting">
+                <span id="nav-user-greeting">Привет, ...</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div id="user-dropdown-content" class="dropdown-content">
+                <a href="settings.html"><i class="fas fa-user-cog"></i> Настройки</a>
+                <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout-container">
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <ul class="sidebar-menu">
+                <li><a href="main.html"><i class="fas fa-home"></i> <span>Главная</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Моя медиатека</h3>
+            <ul class="sidebar-menu">
+                <li><a href="my-playlists.html"><i class="fas fa-list"></i> <span>Мои плейлисты</span></a></li>
+                <li><a href="liked-tracks.html"><i class="fas fa-heart"></i> <span>Понравившиеся</span></a></li>
+                <li><a href="subscriptions.html"><i class="fas fa-rss"></i> <span>Мои подписки</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section" id="artist-section-sidebar" style="display: none;">
+            <h3 class="sidebar-title">Артисту</h3>
+            <ul class="sidebar-menu">
+                <li><a href="my-tracks-artist.html"><i class="fas fa-music"></i> <span>Мои треки</span></a></li>
+                <li><a href="my-albums-artist.html"><i class="fas fa-compact-disc"></i> <span>Мои альбомы</span></a></li>
+                <li><a href="artist-stats.html"><i class="fas fa-chart-line"></i> <span>Статистика</span></a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="page-header">
+            <h1>Создать новый плейлист</h1>
+        </div>
+
+        <div class="form-container">
+            <h2>Дайте вашему плейлисту имя</h2>
+            <div class="message-area" id="message-area-playlist-create"></div>
+            <form id="create-playlist-form">
+                <div class="form-group">
+                    <label for="playlist-name">Название плейлиста</label>
+                    <input type="text" id="playlist-name" name="playlistName" placeholder="Например, 'Утренний плейлист'" required>
+                </div>
+                <button type="submit" class="submit-button" id="create-playlist-submit-btn">Создать</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<div class="player">
+    <div class="player-info">
+        <img src="images/default-cover.png" alt="Track cover" class="player-image" id="player-current-cover">
+        <div class="player-text">
+            <div class="player-title" id="player-current-title">Название трека</div>
+            <div class="player-artist" id="player-current-artist">Исполнитель</div>
+        </div>
+    </div>
+    <div class="player-controls">
+        <div class="player-buttons">
+            <button class="player-button" id="player-shuffle" title="Перемешать"><i class="fas fa-random"></i></button>
+            <button class="player-button" id="player-prev" title="Предыдущий трек"><i class="fas fa-step-backward"></i></button>
+            <button class="player-button play" id="player-play-pause" title="Воспроизвести/Пауза"><i class="fas fa-play"></i></button>
+            <button class="player-button" id="player-next" title="Следующий трек"><i class="fas fa-step-forward"></i></button>
+            <button class="player-button" id="player-repeat" title="Повтор выключен"><i class="fas fa-redo"></i></button>
+        </div>
+        <div class="player-progress">
+            <span class="progress-time" id="player-current-time">0:00</span>
+            <div class="progress-bar" id="player-progress-bar">
+                <div class="progress-fill" id="player-progress-fill"></div>
+            </div>
+            <span class="progress-time" id="player-duration">0:00</span>
+        </div>
+    </div>
+    <div class="player-volume">
+        <i class="fas fa-volume-up volume-icon" id="player-volume-icon"></i>
+        <div class="volume-bar" id="player-volume-bar">
+            <div class="volume-fill" id="player-volume-fill"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    const API_BASE_URL = "http://localhost:8080";
+    const messageArea = document.getElementById('message-area-playlist-create');
+    const submitButton = document.getElementById('create-playlist-submit-btn');
+
+    let currentAudio = new Audio();
+    let currentTrackList = [];
+    let currentTrackIndex = -1;
+    let isShuffle = false;
+    let repeatMode = 0;
+    const playerElements = { playPauseBtn: document.getElementById('player-play-pause'), prevBtn: document.getElementById('player-prev'), nextBtn: document.getElementById('player-next'), shuffleBtn: document.getElementById('player-shuffle'), repeatBtn: document.getElementById('player-repeat'), progressBar: document.getElementById('player-progress-bar'), progressFill: document.getElementById('player-progress-fill'), currentTimeEl: document.getElementById('player-current-time'), durationEl: document.getElementById('player-duration'), volumeBar: document.getElementById('player-volume-bar'), volumeFill: document.getElementById('player-volume-fill'), volumeIcon: document.getElementById('player-volume-icon'), currentCover: document.getElementById('player-current-cover'), currentTitle: document.getElementById('player-current-title'), currentArtist: document.getElementById('player-current-artist') };
+
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) { window.location.href = "/login.html"; return; }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/me`, { headers: { "Authorization": `Bearer ${token}` } });
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+                return;
+            }
+            currentUser = await response.json();
+
+            setupLayoutUI(currentUser);
+            setupPlayerControls();
+
+        } catch (error) {
+            console.error("Ошибка инициализации:", error);
+            displayMessage("Не удалось загрузить данные пользователя: " + (error.message || "Неизвестная ошибка"), 'error');
+            const form = document.getElementById('create-playlist-form');
+            if (form) form.style.display = 'none';
+        }
+    });
+
+    const createPlaylistForm = document.getElementById("create-playlist-form");
+    if (createPlaylistForm) {
+        createPlaylistForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const playlistNameInput = document.getElementById("playlist-name");
+            const playlistName = playlistNameInput.value.trim();
+
+            if (!playlistName) {
+                displayMessage("Название плейлиста не может быть пустым.", "error");
+                return;
+            }
+
+            const playlistData = { name: playlistName };
+            displayMessage("Создаем плейлист...", "info", 0);
+
+            try {
+                const createdPlaylistResponse = await fetchData("/api/playlists", "Ошибка создания плейлиста", {
+                    method: "POST",
+                    body: JSON.stringify(playlistData)
+                });
+
+                if (createdPlaylistResponse && createdPlaylistResponse.name) {
+                    displayMessage(`Плейлист "${createdPlaylistResponse.name}" успешно создан!`, 'success');
+                    playlistNameInput.value = '';
+                    setTimeout(() => {
+                        window.location.href = `/my-playlists.html`;
+                    }, 1500);
+                } else {
+                    throw new Error("Неожиданный ответ от сервера.");
+                }
+            } catch (error) {
+            }
+        });
+    }
+
+    function setupLayoutUI(user) {
+        const userGreeting = document.getElementById('nav-user-greeting');
+        if (userGreeting) userGreeting.textContent = `Привет, ${user.name}!`;
+        setupDropdownMenu();
+        const artistSection = document.getElementById('artist-section-sidebar');
+        if (artistSection) artistSection.style.display = (user.role === 'ARTIST') ? 'block' : 'none';
+        highlightActiveSidebarLink();
+    }
+
+    function setupDropdownMenu() {
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userDropdownContent = document.getElementById('user-dropdown-content');
+        const logoutLink = document.getElementById('logout-link');
+
+        if (userMenuButton) {
+            userMenuButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                const parent = this.parentElement;
+                parent.classList.toggle('active');
+                userDropdownContent.style.display = parent.classList.contains('active') ? 'block' : 'none';
+            });
+        }
+
+        window.addEventListener('click', function(event) {
+            if (userMenuButton && !userMenuButton.contains(event.target)) {
+                if (userMenuButton.parentElement.classList.contains('active')) {
+                    userMenuButton.parentElement.classList.remove('active');
+                    if(userDropdownContent) userDropdownContent.style.display = 'none';
+                }
+            }
+        });
+
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+            });
+        }
+    }
+
+    function highlightActiveSidebarLink() {
+        const currentPageFile = window.location.pathname.split('/').pop();
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+        let targetLinkHref = 'my-playlists.html';
+        sidebarLinks.forEach(link => {
+            if (link.getAttribute('href') === targetLinkHref) {
+                link.classList.add('active-sidebar-link');
+            } else {
+                link.classList.remove('active-sidebar-link');
+            }
+        });
+    }
+
+    function displayMessage(text, type = 'success', duration = 5000) {
+        if (messageArea) {
+            messageArea.innerHTML = `<div class="message ${type}" style="display:block;">${text}</div>`;
+            if (duration > 0) {
+                setTimeout(() => { messageArea.innerHTML = ''; }, duration);
+            }
+        }
+    }
+
+    async function fetchData(endpoint, errorMessagePrefix = "Ошибка", options = {}) {
+        const token = localStorage.getItem("jwtToken");
+        if (!options.isPublic && !token) { window.location.href = "/login.html"; throw new Error("Отсутствует токен."); }
+        const fetchOptions = { ...options, headers: { 'Authorization': `Bearer ${token}`, ...(options.headers || {}) } };
+        if (options.body && typeof options.body === 'string' && !fetchOptions.headers['Content-Type']) {
+            fetchOptions.headers['Content-Type'] = 'application/json';
+        }
+        if(submitButton) submitButton.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+                throw new Error("Ошибка авторизации.");
+            }
+            if (response.status === 204) return { success: true, noBody: true };
+
+            const textResponse = await response.text();
+            let responseData;
+            try { responseData = JSON.parse(textResponse); }
+            catch (e) { responseData = { message: textResponse }; }
+
+            if (!response.ok) {
+                const errorMsg = responseData.data?.message || responseData.message || `${errorMessagePrefix}: ${response.status}`;
+                throw new Error(errorMsg);
+            }
+            return responseData;
+        } catch (error) {
+            displayMessage(error.message, 'error');
+            throw error;
+        } finally {
+            if(submitButton) submitButton.disabled = false;
+        }
+    }
+
+
+    function setupPlayerControls() {
+        if (!playerElements.playPauseBtn) return;
+        playerElements.playPauseBtn.addEventListener('click', togglePlayPause);
+        playerElements.nextBtn.addEventListener('click', playNextTrack);
+        playerElements.prevBtn.addEventListener('click', playPrevTrack);
+        playerElements.shuffleBtn.addEventListener('click', toggleShuffle);
+        playerElements.repeatBtn.addEventListener('click', cycleRepeatMode);
+        currentAudio.addEventListener('loadedmetadata', updatePlayerDuration);
+        currentAudio.addEventListener('timeupdate', updatePlayerProgress);
+        currentAudio.addEventListener('ended', handleTrackEnd);
+        currentAudio.addEventListener('play', () => playerElements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>');
+        currentAudio.addEventListener('pause', () => playerElements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>');
+        if (playerElements.progressBar) playerElements.progressBar.addEventListener('click', seekTrack);
+        if (playerElements.volumeBar) playerElements.volumeBar.addEventListener('click', setVolume);
+        currentAudio.volume = 0.7; if (playerElements.volumeFill) playerElements.volumeFill.style.width = '70%'; updateVolumeIcon(0.7);
+    }
+
+    function playTrackFromList(index, trackListSource) {
+        if (!trackListSource || index < 0 || index >= trackListSource.length) return;
+        currentTrackList = trackListSource; currentTrackIndex = index;
+        const track = currentTrackList[currentTrackIndex];
+        if (!track || !track.filePath || !track.artist?.name) return;
+        fetchData(`/api/tracks/${track.id}/listen`, "Ошибка", { method: 'PATCH' }).catch(console.error);
+        currentAudio.src = `${API_BASE_URL}${track.filePath}`;
+        currentAudio.play().catch(console.error);
+        updatePlayerUI(track);
+    }
+
+    function updatePlayerUI(track) {
+        if (!playerElements.currentCover) return;
+        playerElements.currentCover.src = track.coverPath ? `${API_BASE_URL}${track.coverPath}` : 'images/default-cover.png';
+        playerElements.currentTitle.textContent = track.title || 'Без названия';
+        playerElements.currentArtist.textContent = track.artist?.name || 'Неизвестный';
+    }
+
+    function togglePlayPause() {
+        if (!currentAudio.src) {
+            return;
+        }
+        if (currentAudio.paused) currentAudio.play();
+        else currentAudio.pause();
+    }
+
+    function playNextTrack() {
+        if (currentTrackList.length === 0) return;
+        let nextIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex + 1) % currentTrackList.length;
+        if (isShuffle && nextIndex === currentTrackIndex && currentTrackList.length > 1) return playNextTrack();
+        playTrackFromList(nextIndex, currentTrackList);
+    }
+
+    function playPrevTrack() {
+        if (currentTrackList.length === 0) return;
+        if (currentAudio.currentTime > 3 || currentTrackIndex === -1) { currentAudio.currentTime = 0; return; }
+        let prevIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length;
+        if (isShuffle && prevIndex === currentTrackIndex && currentTrackList.length > 1) return playPrevTrack();
+        playTrackFromList(prevIndex, currentTrackList);
+    }
+
+    function handleTrackEnd() {
+        if (repeatMode === 2) { currentAudio.currentTime = 0; currentAudio.play(); }
+        else if (repeatMode === 1) playNextTrack();
+        else if (isShuffle || currentTrackIndex < currentTrackList.length - 1) playNextTrack();
+        else playerElements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    }
+
+    function updatePlayerDuration() { if (playerElements.durationEl && !isNaN(currentAudio.duration)) playerElements.durationEl.textContent = formatTime(currentAudio.duration); }
+
+    function updatePlayerProgress() {
+        if (playerElements.progressFill && playerElements.currentTimeEl && !isNaN(currentAudio.duration) && currentAudio.duration > 0) {
+            playerElements.currentTimeEl.textContent = formatTime(currentAudio.currentTime);
+            playerElements.progressFill.style.width = `${(currentAudio.currentTime / currentAudio.duration) * 100}%`;
+        }
+    }
+
+    function formatTime(s) { return isNaN(s) ? "0:00" : `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`; }
+
+    function seekTrack(e) { if (!currentAudio.src || isNaN(currentAudio.duration)) return; const rect = playerElements.progressBar.getBoundingClientRect(); currentAudio.currentTime = ((e.clientX - rect.left) / rect.width) * currentAudio.duration; }
+
+    function setVolume(e) { const rect = playerElements.volumeBar.getBoundingClientRect(); let vol = (e.clientX - rect.left) / rect.width; vol = Math.max(0, Math.min(1, vol)); currentAudio.volume = vol; playerElements.volumeFill.style.width = `${vol*100}%`; updateVolumeIcon(vol); }
+
+    function updateVolumeIcon(vol) { if (!playerElements.volumeIcon) return; playerElements.volumeIcon.className = vol === 0 ? 'fas fa-volume-mute volume-icon' : (vol < 0.5 ? 'fas fa-volume-down volume-icon' : 'fas fa-volume-up volume-icon'); }
+
+    function toggleShuffle() { isShuffle = !isShuffle; playerElements.shuffleBtn.classList.toggle('active-control', isShuffle); }
+
+    function cycleRepeatMode() {
+        repeatMode = (repeatMode + 1) % 3;
+        const icons = ['<i class="fas fa-redo"></i>', '<i class="fas fa-redo-alt"></i>', '<i class="fas fa-retweet"></i>'];
+        playerElements.repeatBtn.innerHTML = icons[repeatMode];
+        playerElements.repeatBtn.classList.toggle('active-control', repeatMode !== 0);
+    }
+</script>
+</body>
+</html>

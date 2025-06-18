@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Василёк - Главная</title>
+    <title>Понравившиеся треки - Василёк</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -44,7 +44,7 @@
             border-bottom: 1px solid var(--primary-color); backdrop-filter: blur(5px);
         }
         .navbar-logo a { display: flex; align-items: center; }
-        .navbar-logo img { height: 75px; width: auto; }
+        .navbar-logo img { height: 70px; width: auto; }
         .navbar-links { display: flex; align-items: center; gap: 1rem; }
 
         .user-dropdown { position: relative; display: inline-block; }
@@ -79,8 +79,7 @@
             width: var(--sidebar-width); background-color: var(--surface-color);
             padding: 1.5rem 0; height: calc(100vh - 70px - var(--player-height));
             overflow-y: auto; position: fixed; top: 70px; left: 0;
-            border-right: 1px solid var(--border-color);
-            flex-shrink: 0;
+            border-right: 1px solid var(--border-color); flex-shrink: 0;
         }
         .sidebar-section { margin-bottom: 1.5rem; }
         .sidebar-title {
@@ -103,74 +102,29 @@
         .sidebar-menu li a:hover i, .sidebar-menu li a.active-sidebar-link i { color: var(--primary-color); }
 
         .content {
-            flex-grow: 1; padding: 2rem;
-            margin-left: var(--sidebar-width);
-            overflow-y: auto; overflow-x: hidden;
-            width: calc(100% - var(--sidebar-width));
+            flex-grow: 1; padding: 2rem; margin-left: var(--sidebar-width);
+            overflow-y: auto; overflow-x: hidden; width: calc(100% - var(--sidebar-width));
         }
         .page-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 1rem;
+            margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem;
         }
-        .page-header h1 {
-            color: var(--primary-color); font-size: 2rem; margin: 0;
-            overflow-wrap: break-word;
-        }
+        .page-header h1 { color: var(--primary-color); font-size: 2rem; margin: 0; }
 
-        .controls-toolbar {
-            display: flex; flex-wrap: wrap; gap: 1rem;
-            margin-bottom: 1.5rem; background-color: var(--surface-color);
-            padding: 1rem; border-radius: 8px;
+        .track-list-container {
+            display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;
         }
-        .search-container { flex-grow: 1; position: relative; }
-        .search-container i {
-            position: absolute; left: 1rem; top: 50%;
-            transform: translateY(-50%); color: var(--text-muted-color);
-        }
-        #search-input {
-            width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem;
-            background-color: var(--surface-highlight-color);
-            border: 1px solid var(--border-color); border-radius: 20px;
-            color: var(--text-color); font-size: 1rem; transition: border-color 0.2s;
-        }
-        #search-input:focus { outline: none; border-color: var(--primary-color); }
-        .filter-container { display: flex; gap: 1rem; }
-        .filter-container select {
-            padding: 0.75rem 1rem; background-color: var(--surface-highlight-color);
-            border: 1px solid var(--border-color); border-radius: 20px;
-            color: var(--text-color); -webkit-appearance: none; appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 1rem center; cursor: pointer;
-        }
-
-        .tabs-container {
-            display: flex; border-bottom: 1px solid var(--border-color);
-            margin-bottom: 1.5rem;
-        }
-        .tab-button {
-            padding: 0.75rem 1.5rem; cursor: pointer; background: none; border: none;
-            color: var(--text-muted-color); font-size: 1rem; font-weight: 500;
-            position: relative; transition: color 0.2s;
-        }
-        .tab-button.active { color: var(--primary-color); }
-        .tab-button.active::after {
-            content: ''; position: absolute; bottom: -1px; left: 0;
-            width: 100%; height: 2px; background-color: var(--primary-color);
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .track-list-container { display: flex; flex-direction: column; gap: 0.75rem; }
         .track-card {
             background-color: var(--surface-color); border-radius: 8px;
             padding: 0.75rem 1rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            transition: background-color 0.2s, border-color 0.2s, padding-left 0.2s;
+            transition: all 0.2s ease-in-out;
             border: 1px solid var(--border-color); display: flex;
             align-items: center; width: 100%; min-height: 80px;
         }
         .track-card:hover {
             background-color: var(--surface-highlight-color);
-            border-left: 3px solid var(--primary-color); padding-left: calc(1rem - 3px);
+            border-left: 3px solid var(--primary-color);
+            padding-left: calc(1rem - 3px);
         }
         .track-cover {
             width: 50px; height: 50px; min-width: 50px; flex-shrink: 0;
@@ -178,62 +132,26 @@
             border-radius: 6px; background-color: #222; margin-right: 1rem;
         }
         .track-details-wrapper {
-            flex-grow: 1; min-width: 0; display: flex; flex-direction: column;
+            flex-grow: 1; min-width: 0;
+            display: flex; flex-direction: column;
             justify-content: center; margin-right: 1rem;
         }
         .track-info-primary h3 {
             margin: 0 0 0.1rem 0; font-size: 1rem; color: var(--text-color);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .track-info-primary p.artist-name a.artist-link {
-            margin: 0; font-size: 0.85rem; color: var(--text-artist-color);
+        .track-info-primary p.artist-name {
+            margin: 0 0 0.3rem 0; font-size: 0.85rem; color: var(--text-artist-color);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            text-decoration: none; transition: color 0.2s;
         }
-        .track-info-primary p.artist-name a.artist-link:hover { color: var(--primary-color); text-decoration: underline; }
-
         .track-genre-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            color: var(--text-muted-color);
-            margin-bottom: 0.3rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 0.75rem; color: var(--text-muted-color);
+            margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .genre-subscribe-btn {
-            background: none;
-            border: 1px solid transparent;
-            color: var(--text-muted-color);
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-        .genre-subscribe-btn:hover {
-            color: var(--text-color);
-            border-color: var(--text-muted-color);
-        }
-        .genre-subscribe-btn.subscribed {
-            color: var(--tertiary-color);
-            border-color: var(--tertiary-color);
-            background-color: rgba(100, 181, 142, 0.1);
-        }
-        .genre-subscribe-btn.subscribed:hover {
-            color: white;
-            background-color: var(--tertiary-color);
-        }
-
         .track-stats-info {
-            display: flex; align-items: center; font-size: 0.75rem;
-            color: var(--text-muted-color); gap: 0.75rem;
+            display: flex; align-items: center;
+            font-size: 0.75rem; color: var(--text-muted-color);
+            gap: 0.75rem;
         }
         .track-stats-info .stats-item i { margin-right: 3px; }
         .track-actions-group {
@@ -250,42 +168,15 @@
         .track-meta-actions-buttons { display: flex; align-items: center; gap: 0.5rem; }
         .track-actions-group .icon-button {
             background: none; border: none; color: var(--text-muted-color);
-            font-size: 1.1rem; cursor: pointer; padding: 0.4rem; border-radius: 50%;
-            transition: color 0.2s, background-color 0.2s, transform 0.2s;
+            font-size: 1.1rem; cursor: pointer; padding: 0.4rem;
+            border-radius: 50%; transition: color 0.2s, background-color 0.2s, transform 0.2s;
             display: inline-flex; align-items: center; justify-content: center; line-height: 1;
         }
-        .track-actions-group .icon-button:hover { color: var(--primary-color); background-color: rgba(90, 135, 208, 0.1); transform: scale(1.1); }
+        .track-actions-group .icon-button:hover {
+            color: var(--primary-color); background-color: rgba(90, 135, 208, 0.1); transform: scale(1.1);
+        }
         .track-actions-group .icon-button.liked { color: var(--primary-color); }
         .track-actions-group a.icon-button { text-decoration: none; }
-
-        .album-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1.5rem;
-        }
-        .album-card {
-            background-color: var(--surface-color); border-radius: 8px; padding: 1rem;
-            display: flex; flex-direction: column; text-align: center;
-            border: 1px solid transparent; text-decoration: none; color: inherit;
-            transition: background-color 0.2s, transform 0.2s, border-color 0.2s;
-        }
-        .album-card:hover {
-            background-color: var(--surface-highlight-color); transform: translateY(-5px);
-            border-color: var(--border-color);
-        }
-        .album-card .album-cover {
-            width: 100%; padding-bottom: 100%; background-size: cover;
-            background-position: center; background-color: #333;
-            border-radius: 6px; margin-bottom: 0.75rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .album-card .album-title {
-            font-size: 1rem; font-weight: bold; margin-bottom: 0.25rem;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .album-card .album-artist {
-            font-size: 0.85rem; color: var(--text-muted-color);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
 
         .player {
             position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-height);
@@ -321,8 +212,8 @@
         .message { padding: .75rem; border-radius: 6px; font-size: .9rem; display: none; text-align: center; }
         .success { background-color: rgba(100, 181, 142, 0.2); color: var(--tertiary-color); border: 1px solid var(--tertiary-color); }
         .error { background-color: rgba(90, 135, 208, 0.2); color: var(--primary-color); border: 1px solid var(--primary-color); }
-        .no-results-placeholder { text-align: center; color: #777; padding: 3rem; border: 2px dashed #333; border-radius: 8px; margin-top: 2rem; }
-        .no-results-placeholder i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .no-tracks-placeholder { text-align: center; color: #777; padding: 3rem; border: 2px dashed #333; border-radius: 8px; margin-top: 2rem; }
+        .no-tracks-placeholder i { font-size: 3rem; margin-bottom: 1rem; display: block; }
 
         .modal {
             display: none; position: fixed; z-index: 1001;
@@ -343,6 +234,7 @@
         .close-button {
             color: var(--text-muted-color); float: right; font-size: 1.8rem;
             font-weight: bold; cursor: pointer; background: none; border: none;
+            padding: 0.2rem 0.5rem; line-height: 1;
         }
         .close-button:hover, .close-button:focus { color: var(--text-color); }
         .modal-body ul { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
@@ -408,48 +300,13 @@
 
     <main class="content">
         <div class="page-header">
-            <h1 id="page-title">Главная</h1>
+            <h1 id="page-title">Понравившиеся треки</h1>
         </div>
-
-        <div class="message-area" id="global-message-area-main"></div>
-
-        <div class="controls-toolbar">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="search" id="search-input" placeholder="Поиск по трекам, альбомам, артистам...">
-            </div>
-            <div class="filter-container">
-                <select id="genre-filter">
-                    <option value="all">Все жанры</option>
-                </select>
-                <select id="sort-filter">
-                    <option value="newest">Сначала новые</option>
-                    <option value="popular">Сначала популярные</option>
-                    <option value="alphabetical">По алфавиту (А-Я)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="tabs-container">
-            <button class="tab-button active" data-tab="tracks-view">Треки</button>
-            <button class="tab-button" data-tab="albums-view">Альбомы</button>
-        </div>
-
-        <div id="content-views">
-            <div id="tracks-view" class="tab-content active">
-                <div id="track-list-container" class="track-list-container"></div>
-                <div id="no-tracks-message" class="no-results-placeholder" style="display: none;">
-                    <i class="fas fa-compact-disc"></i>
-                    <p>Треки не найдены.</p>
-                </div>
-            </div>
-            <div id="albums-view" class="tab-content">
-                <div id="album-grid-container" class="album-grid"></div>
-                <div id="no-albums-message" class="no-results-placeholder" style="display: none;">
-                    <i class="fas fa-record-vinyl"></i>
-                    <p>Альбомы не найдены.</p>
-                </div>
-            </div>
+        <div class="message-area" id="global-message-area-liked"></div>
+        <div id="content-area" class="track-list-container"></div>
+        <div id="no-tracks-message" class="no-tracks-placeholder" style="display: none;">
+            <i class="fas fa-heart-broken"></i>
+            <p>У вас пока нет понравившихся треков.</p>
         </div>
     </main>
 </div>
@@ -508,71 +365,38 @@
     let currentUser = null;
     const API_BASE_URL = "http://localhost:8080";
     let currentAudio = new Audio();
-    let allTracksCache = [];
-    let allAlbumsCache = [];
-    let currentTrackList = [];
-    let currentTrackIndex = -1;
+    let currentPlayingTrackList = [];
+    let currentPlayingTrackIndex = -1;
     let isShuffle = false;
     let repeatMode = 0;
-    let userLikedTracks = new Set();
-    let userGenreSubscriptions = new Set();
+    let userLikedTracksGlobally = new Set();
+    const globalMessageAreaLiked = document.getElementById('global-message-area-liked');
     let userPlaylistsCache = [];
     let trackIdToAddToPlaylist = null;
-
-    const globalMessageAreaMain = document.getElementById('global-message-area-main');
-    const searchInput = document.getElementById('search-input');
-    const genreFilter = document.getElementById('genre-filter');
-    const sortFilter = document.getElementById('sort-filter');
-    const tabsContainer = document.querySelector('.tabs-container');
-    const trackListContainer = document.getElementById('track-list-container');
-    const albumGridContainer = document.getElementById('album-grid-container');
-    const noTracksMessage = document.getElementById('no-tracks-message');
-    const noAlbumsMessage = document.getElementById('no-albums-message');
     const addToPlaylistModal = document.getElementById('addToPlaylistModal');
     const closeAddToPlaylistModalButton = document.getElementById('closeAddToPlaylistModal');
     const modalPlaylistList = document.getElementById('modal-playlist-list');
     const modalNoPlaylistsMessage = document.getElementById('modal-no-playlists-message');
-    const playerElements = { playPauseBtn: document.getElementById('player-play-pause'), prevBtn: document.getElementById('player-prev'), nextBtn: document.getElementById('player-next'), shuffleBtn: document.getElementById('player-shuffle'), repeatBtn: document.getElementById('player-repeat'), progressBar: document.getElementById('player-progress-bar'), progressFill: document.getElementById('player-progress-fill'), currentTimeEl: document.getElementById('player-current-time'), durationEl: document.getElementById('player-duration'), volumeBar: document.getElementById('player-volume-bar'), volumeFill: document.getElementById('player-volume-fill'), volumeIcon: document.getElementById('player-volume-icon'), currentCover: document.getElementById('player-current-cover'), currentTitle: document.getElementById('player-current-title'), currentArtist: document.getElementById('player-current-artist') };
 
     document.addEventListener('DOMContentLoaded', async function() {
         const token = localStorage.getItem("jwtToken");
         if (!token) { window.location.href = "/login.html"; return; }
         try {
-            currentUser = await fetchData("/api/users/me", "Ошибка загрузки профиля");
-            if (currentUser) {
-                setupLayoutUI(currentUser);
-                setupEventListeners();
-                setupPlayerControls();
+            const response = await fetch(`${API_BASE_URL}/api/users/me`, { headers: { "Authorization": `Bearer ${token}` } });
+            if (!response.ok) { localStorage.removeItem("jwtToken"); window.location.href = "/login.html"; return; }
+            currentUser = await response.json();
 
-                await Promise.all([
-                    loadUserLikedTracks(),
-                    loadUserGenreSubscriptions(),
-                    loadInitialData()
-                ]);
-            }
+            setupLayoutUI(currentUser);
+            setupPlayerControls();
+
+            await fetchUserLikedTracksIds();
+            await loadAndDisplayPageLikedTracks();
+            setupModalEventListeners();
         } catch (error) {
-            console.error("Ошибка инициализации:", error);
-            displayGlobalMessageMain("Не удалось загрузить страницу: " + error.message, 'error');
+            console.error("Ошибка инициализации liked-tracks.html:", error);
+            displayGlobalMessageLiked("Не удалось загрузить страницу: " + error.message, 'error');
         }
     });
-
-    function setupEventListeners() {
-        searchInput.addEventListener('input', applyFiltersAndSearch);
-        genreFilter.addEventListener('change', applyFiltersAndSearch);
-        sortFilter.addEventListener('change', applyFiltersAndSearch);
-        tabsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab-button')) {
-                const targetTab = e.target.dataset.tab;
-                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                document.getElementById(targetTab).classList.add('active');
-                applyFiltersAndSearch();
-            }
-        });
-        if (closeAddToPlaylistModalButton) closeAddToPlaylistModalButton.addEventListener('click', closeAddToPlaylistModal);
-        window.addEventListener('click', (event) => { if (event.target == addToPlaylistModal) closeAddToPlaylistModal(); });
-    }
 
     function setupLayoutUI(user) {
         const userGreeting = document.getElementById('nav-user-greeting');
@@ -589,21 +413,21 @@
         const logoutLink = document.getElementById('logout-link');
 
         if (userMenuButton) {
-            userMenuButton.addEventListener('click', (event) => {
+            userMenuButton.addEventListener('click', function(event) {
                 event.stopPropagation();
-                const parent = userMenuButton.parentElement;
+                const parent = this.parentElement;
                 parent.classList.toggle('active');
                 userDropdownContent.style.display = parent.classList.contains('active') ? 'block' : 'none';
             });
         }
-        window.addEventListener('click', () => {
-            if (userMenuButton && userMenuButton.parentElement.classList.contains('active')) {
+        window.addEventListener('click', function(event) {
+            if (userMenuButton && !userMenuButton.contains(event.target) && userMenuButton.parentElement.classList.contains('active')) {
                 userMenuButton.parentElement.classList.remove('active');
-                userDropdownContent.style.display = 'none';
+                if(userDropdownContent) userDropdownContent.style.display = 'none';
             }
         });
         if (logoutLink) {
-            logoutLink.addEventListener('click', (e) => {
+            logoutLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 localStorage.removeItem("jwtToken");
                 window.location.href = "/login.html";
@@ -615,8 +439,7 @@
         const currentPageFile = window.location.pathname.split('/').pop();
         const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
         sidebarLinks.forEach(link => {
-            const linkFile = link.getAttribute('href').split('/').pop();
-            if (linkFile === currentPageFile) {
+            if (link.getAttribute('href') === currentPageFile) {
                 link.classList.add('active-sidebar-link');
             } else {
                 link.classList.remove('active-sidebar-link');
@@ -624,9 +447,9 @@
         });
     }
 
-    function displayGlobalMessageMain(message, type = 'success') {
-        globalMessageAreaMain.innerHTML = `<div class="message ${type}" style="display:block;">${message}</div>`;
-        setTimeout(() => { globalMessageAreaMain.innerHTML = ''; }, 4000);
+    function displayGlobalMessageLiked(message, type = 'success') {
+        globalMessageAreaLiked.innerHTML = `<div class="message ${type}" style="display:block;">${message}</div>`;
+        setTimeout(() => { globalMessageAreaLiked.innerHTML = ''; }, 4000);
     }
 
     async function fetchData(endpoint, errorMessagePrefix = "Ошибка", options = {}) {
@@ -651,225 +474,149 @@
             return await response.json();
         } catch (error) {
             console.error(`fetchData (${endpoint}) error:`, error);
-            if (!error.message.includes("авторизации")) displayGlobalMessageMain(error.message, 'error');
+            if (!error.message.includes("авторизации")) displayGlobalMessageLiked(error.message, 'error');
             throw error;
         }
     }
 
-    async function loadUserLikedTracks() {
+    async function fetchUserLikedTracksIds() {
         try {
-            const likedTrackLikes = await fetchData("/api/track-likes/my", "Ошибка загрузки лайков");
-            userLikedTracks.clear();
-            if (Array.isArray(likedTrackLikes)) {
-                likedTrackLikes.forEach(like => userLikedTracks.add(like.trackId));
-            }
-        } catch (error) {  }
-    }
-
-    async function loadUserGenreSubscriptions() {
-        try {
-            const genreSubs = await fetchData("/api/genre-subscriptions/my", "Ошибка загрузки подписок на жанры");
-            userGenreSubscriptions.clear();
-            if (Array.isArray(genreSubs)) {
-                genreSubs.forEach(sub => userGenreSubscriptions.add(sub.genre));
+            const likedItemsDTO = await fetchData("/api/track-likes/my", "Ошибка загрузки ID понравившихся треков");
+            userLikedTracksGlobally.clear();
+            if (Array.isArray(likedItemsDTO)) {
+                likedItemsDTO.forEach(dto => userLikedTracksGlobally.add(dto.trackId));
             }
         } catch (error) {
-            console.error("Не удалось загрузить подписки на жанры:", error);
+            console.error("Ошибка при получении ID лайков:", error);
         }
     }
 
-    async function loadInitialData() {
+    async function loadAndDisplayPageLikedTracks() {
+        const contentArea = document.getElementById('content-area');
+        const noTracksMessage = document.getElementById('no-tracks-message');
+        contentArea.innerHTML = '<p style="text-align:center; color: var(--text-muted-color);">Загрузка...</p>';
+        noTracksMessage.style.display = 'none';
         try {
-            [allTracksCache, allAlbumsCache] = await Promise.all([
-                fetchData("/api/tracks/all", "Ошибка загрузки треков"),
-                fetchData("/api/albums/all", "Ошибка загрузки альбомов")
-            ]);
-            populateGenreFilter(allTracksCache);
-            applyFiltersAndSearch();
-        } catch (error) {  }
-    }
-
-    function populateGenreFilter(tracks) {
-        const genres = new Set(tracks.map(track => track.genre).filter(Boolean));
-        genreFilter.innerHTML = '<option value="all">Все жанры</option>';
-        genres.forEach(genre => {
-            const option = document.createElement('option');
-            option.value = genre;
-            option.textContent = genre;
-            genreFilter.appendChild(option);
-        });
-    }
-
-    function applyFiltersAndSearch() {
-        const searchQuery = searchInput.value.toLowerCase().trim();
-        const activeTab = document.querySelector('.tab-button.active').dataset.tab;
-
-        if (activeTab === 'tracks-view') {
-            const selectedGenre = genreFilter.value;
-            const sortBy = sortFilter.value;
-            let filteredTracks = [...allTracksCache];
-            if (searchQuery) filteredTracks = filteredTracks.filter(track => track.title.toLowerCase().includes(searchQuery) || track.artist.name.toLowerCase().includes(searchQuery));
-            if (selectedGenre !== 'all') filteredTracks = filteredTracks.filter(track => track.genre === selectedGenre);
-            filteredTracks.sort((a, b) => {
-                if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
-                if (sortBy === 'popular') return (b.listensCount || 0) - (a.listensCount || 0);
-                if (sortBy === 'alphabetical') return a.title.localeCompare(b.title);
-                return 0;
-            });
-            displayTracks(filteredTracks);
-        } else if (activeTab === 'albums-view') {
-            let filteredAlbums = [...allAlbumsCache];
-            if (searchQuery) filteredAlbums = filteredAlbums.filter(album => album.name.toLowerCase().includes(searchQuery) || album.artistName.toLowerCase().includes(searchQuery));
-            displayAlbums(filteredAlbums);
+            const likedItemsDTO = await fetchData("/api/track-likes/my", "Ошибка загрузки понравившихся треков");
+            let tracksToDisplay = [];
+            if (Array.isArray(likedItemsDTO)) {
+                tracksToDisplay = likedItemsDTO.map(dto => ({
+                    id: dto.trackId,
+                    title: dto.trackTitle,
+                    artist: { name: dto.trackArtistName || 'Неизвестный' },
+                    coverPath: dto.trackCoverPath,
+                    filePath: dto.trackFilePath,
+                    genre: dto.trackGenre,
+                    likesCount: dto.trackLikesCount,
+                    listensCount: dto.trackListensCount
+                })).filter(Boolean);
+            }
+            currentPlayingTrackList = tracksToDisplay;
+            displayTracks(tracksToDisplay);
+            userLikedTracksGlobally.clear();
+            tracksToDisplay.forEach(track => userLikedTracksGlobally.add(track.id));
+        } catch (error) {
+            displayGlobalMessageLiked("Не удалось загрузить понравившиеся треки. " + error.message, 'error');
+            displayTracks([]);
         }
     }
 
     function displayTracks(tracks) {
-        trackListContainer.innerHTML = '';
-        noTracksMessage.style.display = (!tracks || tracks.length === 0) ? 'block' : 'none';
-        if (!tracks) return;
+        const contentArea = document.getElementById('content-area');
+        const noTracksMessage = document.getElementById('no-tracks-message');
+        contentArea.innerHTML = '';
+        if (!tracks || tracks.length === 0) {
+            noTracksMessage.style.display = 'block'; contentArea.style.display = 'none'; return;
+        }
+        noTracksMessage.style.display = 'none'; contentArea.style.display = 'flex';
 
-        tracks.forEach((track) => {
+        tracks.forEach((track, index) => {
             const coverUrl = track.coverPath ? `${API_BASE_URL}${track.coverPath}` : 'images/default-cover.png';
-            const isLiked = userLikedTracks.has(track.id);
-            const isGenreSubscribed = userGenreSubscriptions.has(track.genre);
+            const isLiked = userLikedTracksGlobally.has(track.id);
+            const likeIconClass = isLiked ? 'fas fa-heart' : 'far fa-heart';
             const downloadUrl = `${API_BASE_URL}/api/tracks/${track.id}/download`;
             const trackCardHTML = `
-                <div class="track-card" data-track-id="${track.id}">
+                <div class="track-card" data-track-id="${track.id}" data-track-index="${index}">
                     <div class="track-cover" style="background-image: url('${coverUrl}')"></div>
                     <div class="track-details-wrapper">
-                        <div class="track-info-primary">
-                            <h3>${track.title || 'Без названия'}</h3>
-                            <p class="artist-name"><a href="artist.html?id=${track.artist.id}" class="artist-link">${track.artist?.name || 'Неизвестный'}</a></p>
-                        </div>
-                        <div class="track-genre-info">
-                            <span>Жанр: ${track.genre || 'Неизвестен'}</span>
-                            ${track.genre ? `
-                            <button
-                                class="genre-subscribe-btn ${isGenreSubscribed ? 'subscribed' : ''}"
-                                data-genre="${track.genre}"
-                                title="${isGenreSubscribed ? 'Отписаться от жанра' : 'Подписаться на жанр'}">
-                                <i class="fas ${isGenreSubscribed ? 'fa-check' : 'fa-plus'}"></i>
-                            </button>
-                            ` : ''}
-                        </div>
+                        <div class="track-info-primary"><h3>${track.title}</h3><p class="artist-name">${track.artist.name}</p></div>
+                        <div class="track-genre-info"><span>Жанр: ${track.genre || 'Неизвестен'}</span></div>
                         <div class="track-stats-info">
                             <span class="stats-item"><i class="fas fa-headphones"></i> ${track.listensCount || 0}</span>
                             <span class="stats-item likes-count-display" data-likes-track-id="${track.id}"><i class="fas fa-heart"></i> ${track.likesCount || 0}</span>
                         </div>
                     </div>
                     <div class="track-actions-group">
-                        <button class="play-button" data-track-id="${track.id}"><i class="fas fa-play"></i> Play</button>
+                        <button class="play-button" data-track-index="${index}"><i class="fas fa-play"></i> Play</button>
                         <div class="track-meta-actions-buttons">
-                            <button class="icon-button like-button ${isLiked ? 'liked' : ''}" data-track-id="${track.id}" title="${isLiked ? 'Убрать лайк' : 'Лайкнуть'}"><i class="${isLiked ? 'fas fa-heart' : 'far fa-heart'}"></i></button>
+                            <button class="icon-button like-button ${isLiked ? 'liked' : ''}" data-track-id="${track.id}" title="Убрать лайк"><i class="${likeIconClass}"></i></button>
                             <button class="icon-button add-to-playlist-button" data-track-id="${track.id}" title="Добавить в плейлист"><i class="fas fa-plus-square"></i></button>
                             <a href="${downloadUrl}" class="icon-button" download><i class="fas fa-download"></i></a>
                         </div>
                     </div>
                 </div>`;
-            trackListContainer.insertAdjacentHTML('beforeend', trackCardHTML);
+            contentArea.insertAdjacentHTML('beforeend', trackCardHTML);
         });
 
-        trackListContainer.querySelectorAll('.play-button').forEach(button => button.addEventListener('click', () => playTrackFromList(tracks.findIndex(t => t.id == button.dataset.trackId), tracks)));
-        trackListContainer.querySelectorAll('.like-button').forEach(button => button.addEventListener('click', handleLikeButtonClick));
-        trackListContainer.querySelectorAll('.add-to-playlist-button').forEach(button => button.addEventListener('click', () => { trackIdToAddToPlaylist = Number(button.dataset.trackId); openAddToPlaylistModal(); }));
-        trackListContainer.querySelectorAll('.genre-subscribe-btn').forEach(button => button.addEventListener('click', handleGenreSubscribeClick));
-    }
-
-    function displayAlbums(albums) {
-        albumGridContainer.innerHTML = '';
-        noAlbumsMessage.style.display = (!albums || albums.length === 0) ? 'block' : 'none';
-        if(!albums) return;
-
-        albums.forEach(album => {
-            const coverUrl = (album.tracks && album.tracks[0]?.coverPath) ? `${API_BASE_URL}${album.tracks[0].coverPath}` : 'images/default-cover.png';
-            const albumCard = document.createElement('a');
-            albumCard.href = `album-detail.html?id=${album.id}`;
-            albumCard.className = 'album-card';
-            albumCard.innerHTML = `
-                <div class="album-cover" style="background-image: url('${coverUrl}')"></div>
-                <div class="album-title" title="${album.name}">${album.name}</div>
-                <div class="album-artist" title="${album.artistName}">${album.artistName}</div>
-            `;
-            albumGridContainer.appendChild(albumCard);
-        });
-    }
-
-    async function handleLikeButtonClick(event) {
-        const button = event.currentTarget;
-        const trackId = Number(button.dataset.trackId);
-        if (!trackId || !currentUser) return;
-        const isCurrentlyLiked = button.classList.contains('liked');
-        const icon = button.querySelector('i');
-        button.classList.toggle('liked', !isCurrentlyLiked);
-        icon.className = isCurrentlyLiked ? 'far fa-heart' : 'fas fa-heart';
-        button.title = isCurrentlyLiked ? 'Лайкнуть' : 'Убрать лайк';
-
-        try {
-            if (isCurrentlyLiked) {
-                await fetchData(`/api/track-likes?trackId=${trackId}`, "Ошибка снятия лайка", { method: 'DELETE' });
-                userLikedTracks.delete(trackId);
-            } else {
-                await fetchData(`/api/track-likes`, "Ошибка лайка", { method: 'POST', body: JSON.stringify({ track: { id: trackId } }) });
-                userLikedTracks.add(trackId);
-            }
-            const updatedTrack = await fetchData(`/api/tracks/${trackId}`);
-            const trackInCache = allTracksCache.find(t => t.id === trackId);
-            if (trackInCache) trackInCache.likesCount = updatedTrack.likesCount;
-            applyFiltersAndSearch();
-        } catch (error) {
-            button.classList.toggle('liked', isCurrentlyLiked);
-            icon.className = isCurrentlyLiked ? 'fas fa-heart' : 'far fa-heart';
-            button.title = isCurrentlyLiked ? 'Убрать лайк' : 'Лайкнуть';
-        }
-    }
-
-    async function handleGenreSubscribeClick(event) {
-        event.stopPropagation();
-        const button = event.currentTarget;
-        const genre = button.dataset.genre;
-        if (!genre || !currentUser) return;
-        const isSubscribed = button.classList.contains('subscribed');
-
-        const allButtonsForThisGenre = document.querySelectorAll(`.genre-subscribe-btn[data-genre="${genre}"]`);
-        allButtonsForThisGenre.forEach(btn => {
-            btn.classList.toggle('subscribed', !isSubscribed);
-            btn.title = isSubscribed ? 'Подписаться на жанр' : 'Отписаться от жанра';
-            btn.querySelector('i').className = `fas ${isSubscribed ? 'fa-plus' : 'fa-check'}`;
-        });
-
-        try {
-            if (isSubscribed) {
-                await fetchData(`/api/genre-subscriptions?genre=${encodeURIComponent(genre)}`, "Ошибка отписки", { method: 'DELETE' });
-                userGenreSubscriptions.delete(genre);
-                displayGlobalMessageMain(`Вы отписались от жанра "${genre}"`, 'success');
-            } else {
-                await fetchData('/api/genre-subscriptions', "Ошибка подписки", { method: 'POST', body: JSON.stringify({ genre: genre }) });
-                userGenreSubscriptions.add(genre);
-                displayGlobalMessageMain(`Вы подписались на жанр "${genre}"`, 'success');
-            }
-        } catch (error) {
-            allButtonsForThisGenre.forEach(btn => {
-                btn.classList.toggle('subscribed', isSubscribed);
-                btn.title = isSubscribed ? 'Отписаться от жанра' : 'Подписаться на жанр';
-                btn.querySelector('i').className = `fas ${isSubscribed ? 'fa-check' : 'fa-plus'}`;
+        contentArea.querySelectorAll('.play-button').forEach(btn => btn.addEventListener('click', function() { playTrackFromList(parseInt(this.dataset.trackIndex), currentPlayingTrackList); }));
+        contentArea.querySelectorAll('.like-button').forEach(btn => btn.addEventListener('click', handleLikeButtonClickOnLikedPage));
+        contentArea.querySelectorAll('.add-to-playlist-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                trackIdToAddToPlaylist = Number(this.dataset.trackId);
+                openAddToPlaylistModal();
             });
+        });
+    }
+
+    async function handleLikeButtonClickOnLikedPage(event) {
+        const button = event.currentTarget;
+        const trackCard = button.closest('.track-card');
+        const trackId = Number(button.dataset.trackId);
+
+        userLikedTracksGlobally.delete(trackId);
+        trackCard.style.transition = 'opacity 0.3s, transform 0.3s';
+        trackCard.style.opacity = '0';
+        trackCard.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            trackCard.remove();
+            currentPlayingTrackList = currentPlayingTrackList.filter(t => t.id !== trackId);
+            document.querySelectorAll('#content-area .track-card').forEach((card, i) => {
+                card.dataset.trackIndex = i;
+                card.querySelector('.play-button').dataset.trackIndex = i;
+            });
+            if (currentPlayingTrackList.length === 0) displayTracks([]);
+        }, 300);
+
+        try {
+            await fetchData(`/api/track-likes?trackId=${trackId}`, "Ошибка при снятии лайка", { method: 'DELETE' });
+            displayGlobalMessageLiked("Трек удален из понравившихся.", "success");
+        } catch (error) {
+            displayGlobalMessageLiked("Не удалось снять лайк. Попробуйте обновить страницу.", "error");
+            await loadAndDisplayPageLikedTracks();
         }
     }
 
-    function openAddToPlaylistModal() {
+    function setupModalEventListeners() {
+        if (closeAddToPlaylistModalButton) closeAddToPlaylistModalButton.addEventListener('click', closeAddToPlaylistModal);
+        window.addEventListener('click', (event) => { if (event.target == addToPlaylistModal) closeAddToPlaylistModal(); });
+    }
+    async function openAddToPlaylistModal() {
         if (!trackIdToAddToPlaylist) return;
         modalPlaylistList.innerHTML = '<p>Загрузка...</p>';
         addToPlaylistModal.style.display = 'flex';
-        fetchData("/api/playlists/my", "Ошибка загрузки плейлистов")
-            .then(playlists => {
-                userPlaylistsCache = playlists;
-                populateModalPlaylistList(userPlaylistsCache);
-            }).catch(error => {
-            modalPlaylistList.innerHTML = `<p>Ошибка: ${error.message}</p>`;
-        });
+        try {
+            userPlaylistsCache = await fetchData("/api/playlists/my", "Ошибка загрузки плейлистов");
+            populateModalPlaylistList(userPlaylistsCache);
+        } catch (error) {
+            modalPlaylistList.innerHTML = '';
+            modalNoPlaylistsMessage.innerHTML = `Ошибка загрузки. <a href="create-playlist.html">Создать?</a>`;
+            modalNoPlaylistsMessage.style.display = 'block';
+        }
     }
-    function closeAddToPlaylistModal() { if (addToPlaylistModal) addToPlaylistModal.style.display = 'none'; trackIdToAddToPlaylist = null; }
+    function closeAddToPlaylistModal() {
+        if (addToPlaylistModal) addToPlaylistModal.style.display = 'none';
+        trackIdToAddToPlaylist = null;
+    }
     function populateModalPlaylistList(playlists) {
         modalPlaylistList.innerHTML = '';
         if (!playlists || playlists.length === 0) { modalNoPlaylistsMessage.style.display = 'block'; modalPlaylistList.style.display = 'none'; return; }
@@ -878,20 +625,23 @@
             const li = document.createElement('li');
             li.textContent = playlist.name;
             li.dataset.playlistId = playlist.id;
-            const trackInPlaylist = playlist.tracks?.some(t => t.id === trackIdToAddToPlaylist);
-            if (trackInPlaylist) { li.style.opacity = "0.5"; li.style.cursor = "not-allowed"; li.title = "Трек уже в этом плейлисте"; }
-            else { li.addEventListener('click', () => handleAddTrackToSpecificPlaylist(playlist.id, trackIdToAddToPlaylist)); }
+            if (playlist.tracks?.some(t => t.id === trackIdToAddToPlaylist)) {
+                li.style.opacity = "0.5"; li.style.cursor = "not-allowed";
+            } else {
+                li.addEventListener('click', () => handleAddTrackToSpecificPlaylist(playlist.id, trackIdToAddToPlaylist));
+            }
             modalPlaylistList.appendChild(li);
         });
     }
     async function handleAddTrackToSpecificPlaylist(playlistId, trackId) {
         try {
             await fetchData(`/api/playlists/${playlistId}/add-track/${trackId}`, "Ошибка добавления", { method: 'PUT' });
-            displayGlobalMessageMain(`Трек добавлен в плейлист!`, 'success');
+            displayGlobalMessageLiked(`Трек добавлен в плейлист!`, 'success');
             closeAddToPlaylistModal();
-        } catch (error) {  }
+        } catch (error) {}
     }
 
+    const playerElements = { playPauseBtn: document.getElementById('player-play-pause'), prevBtn: document.getElementById('player-prev'), nextBtn: document.getElementById('player-next'), shuffleBtn: document.getElementById('player-shuffle'), repeatBtn: document.getElementById('player-repeat'), progressBar: document.getElementById('player-progress-bar'), progressFill: document.getElementById('player-progress-fill'), currentTimeEl: document.getElementById('player-current-time'), durationEl: document.getElementById('player-duration'), volumeBar: document.getElementById('player-volume-bar'), volumeFill: document.getElementById('player-volume-fill'), volumeIcon: document.getElementById('player-volume-icon'), currentCover: document.getElementById('player-current-cover'), currentTitle: document.getElementById('player-current-title'), currentArtist: document.getElementById('player-current-artist') };
     function setupPlayerControls() {
         if (!playerElements.playPauseBtn) return;
         playerElements.playPauseBtn.addEventListener('click', togglePlayPause);
@@ -909,10 +659,10 @@
         currentAudio.volume = 0.7; if (playerElements.volumeFill) playerElements.volumeFill.style.width = '70%'; updateVolumeIcon(0.7);
     }
     function playTrackFromList(index, trackListSource) {
-        if (!trackListSource || index < 0 || index >= trackListSource.length) return;
-        currentTrackList = trackListSource; currentTrackIndex = index;
-        const track = currentTrackList[currentTrackIndex];
-        if (!track || !track.filePath || !track.artist?.name) return;
+        if (!trackListSource || index < 0 || index >= trackListSource.length) { currentPlayingTrackIndex = -1; return; }
+        currentPlayingTrackList = trackListSource; currentPlayingTrackIndex = index;
+        const track = currentPlayingTrackList[currentPlayingTrackIndex];
+        if (!track || !track.filePath || !track.artist) { console.error("Некорректные данные трека:", track); return; }
         const token = localStorage.getItem("jwtToken");
         fetch(`${API_BASE_URL}/api/tracks/${track.id}/listen`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } }).catch(console.error);
         currentAudio.src = `${API_BASE_URL}${track.filePath}`;
@@ -920,32 +670,32 @@
         updatePlayerUI(track);
     }
     function updatePlayerUI(track) {
-        if (!playerElements.currentCover) return;
+        if (!playerElements.currentCover || !track) return;
         playerElements.currentCover.src = track.coverPath ? `${API_BASE_URL}${track.coverPath}` : 'images/default-cover.png';
         playerElements.currentTitle.textContent = track.title || 'Без названия';
         playerElements.currentArtist.textContent = track.artist?.name || 'Неизвестный';
     }
     function togglePlayPause() {
-        if (!currentAudio.src) { if (currentTrackList.length > 0) playTrackFromList(0, currentTrackList); return; }
+        if (!currentAudio.src && currentPlayingTrackList.length > 0) { playTrackFromList(0, currentPlayingTrackList); return; }
         if (currentAudio.paused) currentAudio.play(); else currentAudio.pause();
     }
     function playNextTrack() {
-        if (currentTrackList.length === 0) return;
-        let nextIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex + 1) % currentTrackList.length;
-        if (isShuffle && nextIndex === currentTrackIndex && currentTrackList.length > 1) return playNextTrack();
-        playTrackFromList(nextIndex, currentTrackList);
+        if (currentPlayingTrackList.length === 0) return;
+        let nextIndex = isShuffle ? Math.floor(Math.random() * currentPlayingTrackList.length) : (currentPlayingTrackIndex + 1) % currentPlayingTrackList.length;
+        if (isShuffle && nextIndex === currentPlayingTrackIndex && currentPlayingTrackList.length > 1) return playNextTrack();
+        playTrackFromList(nextIndex, currentPlayingTrackList);
     }
     function playPrevTrack() {
-        if (currentTrackList.length === 0) return;
-        if (currentAudio.currentTime > 3 || currentTrackIndex === -1) { currentAudio.currentTime = 0; return; }
-        let prevIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length;
-        if (isShuffle && prevIndex === currentTrackIndex && currentTrackList.length > 1) return playPrevTrack();
-        playTrackFromList(prevIndex, currentTrackList);
+        if (currentPlayingTrackList.length === 0) return;
+        if (currentAudio.currentTime > 3 || currentPlayingTrackIndex === -1) { currentAudio.currentTime = 0; return; }
+        let prevIndex = isShuffle ? Math.floor(Math.random() * currentPlayingTrackList.length) : (currentPlayingTrackIndex - 1 + currentPlayingTrackList.length) % currentPlayingTrackList.length;
+        if (isShuffle && prevIndex === currentPlayingTrackIndex && currentPlayingTrackList.length > 1) return playPrevTrack();
+        playTrackFromList(prevIndex, currentPlayingTrackList);
     }
     function handleTrackEnd() {
         if (repeatMode === 2) { currentAudio.currentTime = 0; currentAudio.play(); }
         else if (repeatMode === 1) playNextTrack();
-        else if (isShuffle || currentTrackIndex < currentTrackList.length - 1) playNextTrack();
+        else if (isShuffle || currentPlayingTrackIndex < currentPlayingTrackList.length - 1) playNextTrack();
         else playerElements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
     }
     function updatePlayerDuration() { if (playerElements.durationEl && !isNaN(currentAudio.duration)) playerElements.durationEl.textContent = formatTime(currentAudio.duration); }
@@ -960,12 +710,7 @@
     function setVolume(e) { const rect = playerElements.volumeBar.getBoundingClientRect(); let vol = (e.clientX - rect.left) / rect.width; vol = Math.max(0, Math.min(1, vol)); currentAudio.volume = vol; playerElements.volumeFill.style.width = `${vol*100}%`; updateVolumeIcon(vol); }
     function updateVolumeIcon(vol) { if (!playerElements.volumeIcon) return; playerElements.volumeIcon.className = vol === 0 ? 'fas fa-volume-mute volume-icon' : (vol < 0.5 ? 'fas fa-volume-down volume-icon' : 'fas fa-volume-up volume-icon'); }
     function toggleShuffle() { isShuffle = !isShuffle; playerElements.shuffleBtn.classList.toggle('active-control', isShuffle); }
-    function cycleRepeatMode() {
-        repeatMode = (repeatMode + 1) % 3;
-        const icons = ['<i class="fas fa-redo"></i>', '<i class="fas fa-redo-alt"></i>', '<i class="fas fa-retweet"></i>'];
-        playerElements.repeatBtn.innerHTML = icons[repeatMode];
-        playerElements.repeatBtn.classList.toggle('active-control', repeatMode !== 0);
-    }
+    function cycleRepeatMode() { repeatMode = (repeatMode + 1) % 3; playerElements.repeatBtn.innerHTML = ['<i class="fas fa-redo"></i>', '<i class="fas fa-redo-alt"></i>', '<i class="fas fa-retweet"></i>'][repeatMode]; playerElements.repeatBtn.classList.toggle('active-control', repeatMode !== 0); }
 </script>
 </body>
 </html>

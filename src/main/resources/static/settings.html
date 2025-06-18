@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля - Василёк</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5A87D0;
+            --secondary-color: #9d79d0;
+            --tertiary-color: #64b58e;
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --surface-highlight-color: #242424;
+            --text-color: #ffffff;
+            --text-muted-color: #b3b3b3;
+            --text-artist-color: #e0e0e0;
+            --border-color: #2f2f2f;
+            --danger-color: #dc3545;
+            --sidebar-width: 260px;
+            --player-height: 90px;
+            --navbar-height: 85px;
+            --content-padding: 1.5rem;
+        }
+
+        html { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: inherit; }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--navbar-height);
+            background-color: rgba(20, 20, 20, 0.95); display: flex;
+            justify-content: space-between; align-items: center;
+            padding: 0 var(--content-padding);
+            z-index: 1000;
+            border-bottom: 1px solid var(--primary-color); backdrop-filter: blur(5px);
+        }
+        .navbar-logo a { display: flex; align-items: center; }
+        .navbar-logo img { height: 70px; width: auto; }
+        .navbar-links { display: flex; align-items: center; gap: 1rem; }
+
+        .user-dropdown { position: relative; display: inline-block; }
+        #user-menu-button {
+            background: none; border: none; color: var(--text-muted-color);
+            cursor: pointer; font-size: 0.95rem; font-weight: 500;
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem; border-radius: 20px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        #user-menu-button:hover, .user-dropdown.active #user-menu-button {
+            background-color: var(--surface-color); color: var(--text-color);
+        }
+        .dropdown-arrow { font-size: 0.8em; transition: transform 0.2s ease-in-out; }
+        .user-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-content {
+            display: none; position: absolute; background-color: var(--surface-color);
+            min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+            z-index: 1; border-radius: 8px; padding: 0.5rem 0; right: 0;
+            top: 120%; border: 1px solid var(--border-color);
+        }
+        .dropdown-content a {
+            color: var(--text-artist-color); padding: 12px 16px; text-decoration: none;
+            display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem;
+        }
+        .dropdown-content a:hover {
+            background-color: var(--surface-highlight-color); color: var(--primary-color);
+        }
+
+        .main-layout-container {
+            display: flex; flex-grow: 1;
+            margin-top: var(--navbar-height);
+            width: 100%; overflow: hidden;
+            padding-bottom: var(--player-height);
+        }
+
+        .sidebar {
+            width: var(--sidebar-width); min-width: var(--sidebar-width);
+            background-color: var(--surface-color);
+            padding: 1.5rem 0;
+            height: calc(100vh - var(--navbar-height) - var(--player-height));
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            flex-shrink: 0; position: fixed;
+            top: var(--navbar-height); left: 0; bottom: var(--player-height);
+        }
+        .sidebar-section { margin-bottom: 1.5rem; }
+        .sidebar-title {
+            font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted-color);
+            padding: 0 1.5rem; margin-bottom: 0.75rem; font-weight: bold; letter-spacing: 0.5px;
+        }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li a {
+            display: flex; align-items: center; padding: 0.75rem 1.5rem;
+            color: var(--text-artist-color); text-decoration: none; font-size: 0.95rem;
+            transition: background-color 0.2s, color 0.2s; border-left: 3px solid transparent;
+        }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active-sidebar-link {
+            background-color: var(--surface-highlight-color); color: var(--primary-color);
+            font-weight: bold; border-left-color: var(--primary-color);
+        }
+        .sidebar-menu li a i {
+            margin-right: 1rem; width: 20px; text-align: center; color: var(--text-muted-color);
+        }
+        .sidebar-menu li a:hover i, .sidebar-menu li a.active-sidebar-link i { color: var(--primary-color); }
+
+        .content {
+            flex-grow: 1; padding: var(--content-padding);
+            margin-left: var(--sidebar-width);
+            overflow-y: auto; overflow-x: hidden;
+        }
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 1rem;
+        }
+        .page-header h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+
+        .settings-section {
+            background-color: var(--surface-color);
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            max-width: 700px;
+            margin: 0 auto 2rem auto;
+            border: 1px solid var(--border-color);
+        }
+        .settings-section h2 {
+            margin-top: 0; font-size: 1.4rem;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem; margin-bottom: 1.25rem;
+        }
+
+        .info-display-row {
+            display: flex; justify-content: space-between;
+            align-items: center; padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .info-display-row:last-of-type { border-bottom: none; }
+        .info-label { color: var(--text-muted-color); }
+        .info-value { font-weight: 500; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted-color); }
+        .form-group input {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 6px; background-color: var(--surface-highlight-color);
+            color: var(--text-color); font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+        }
+        .form-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(90, 135, 208, 0.2); }
+
+        .password-toggle { display: flex; align-items: center; justify-content: flex-end; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted-color); }
+        .password-toggle input { width: auto; margin-right: 0.5rem; cursor: pointer; }
+        .password-toggle label { cursor: pointer; }
+
+        .form-actions { text-align: right; margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;}
+        .submit-button, .cancel-button {
+            padding: 0.7rem 1.5rem; font-weight: bold; border: none;
+            border-radius: 20px; cursor: pointer; font-size: 0.9rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .submit-button { background-color: var(--primary-color); color: white; }
+        .submit-button:hover { background-color: #4a77c0; }
+        .submit-button:disabled { background-color: #555; cursor: not-allowed; }
+        .cancel-button { background-color: #444; color: var(--text-color); }
+        .cancel-button:hover { background-color: #555; }
+
+        .danger-zone { border-color: var(--danger-color); background-color: rgba(220, 53, 69, 0.05); }
+        .danger-zone h2 { color: var(--danger-color); }
+        .danger-zone .delete-button { background-color: var(--danger-color); }
+        .danger-zone .delete-button:hover { background-color: #c0303f; }
+
+        .message-area { margin-bottom: 1rem; min-height: 20px; text-align: center; }
+        .message { padding: .75rem; border-radius: 6px; font-size: .9rem; display: none; margin-top: -0.5rem; margin-bottom: 1rem; border: 1px solid; }
+        .success { background-color: rgba(100, 181, 142, 0.2); color: var(--tertiary-color); border-color: var(--tertiary-color); }
+        .error { background-color: rgba(220, 53, 69, 0.15); color: var(--danger-color); border-color: var(--danger-color); }
+        .info { background-color: rgba(23, 162, 184, 0.15); color: #17a2b8; border-color: #17a2b8; }
+
+        .player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-height); background-color: #1c1c1c; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; padding: 0 var(--content-padding); z-index: 1001; color: var(--text-muted-color); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
+    </div>
+    <div class="navbar-links">
+        <div class="user-dropdown">
+            <button id="user-menu-button" class="navbar-user-greeting">
+                <span id="nav-user-greeting">Привет, ...</span>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+            <div id="user-dropdown-content" class="dropdown-content">
+                <a href="settings.html"><i class="fas fa-user-cog"></i> Настройки</a>
+                <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-layout-container">
+    <aside class="sidebar">
+        <!-- Адаптированный сайдбар -->
+        <div class="sidebar-section">
+            <ul class="sidebar-menu">
+                <li><a href="main.html"><i class="fas fa-home"></i> <span>Главная</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">Моя медиатека</h3>
+            <ul class="sidebar-menu">
+                <li><a href="my-playlists.html"><i class="fas fa-list"></i> <span>Мои плейлисты</span></a></li>
+                <li><a href="liked-tracks.html"><i class="fas fa-heart"></i> <span>Понравившиеся</span></a></li>
+                <li><a href="subscriptions.html"><i class="fas fa-rss"></i> <span>Мои подписки</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section" id="artist-section-sidebar" style="display: none;">
+            <h3 class="sidebar-title">Артисту</h3>
+            <ul class="sidebar-menu">
+                <li><a href="my-tracks-artist.html"><i class="fas fa-music"></i> <span>Мои треки</span></a></li>
+                <li><a href="my-albums-artist.html"><i class="fas fa-compact-disc"></i> <span>Мои альбомы</span></a></li>
+                <li><a href="artist-stats.html"><i class="fas fa-chart-line"></i> <span>Статистика</span></a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="page-header">
+            <h1>Настройки профиля</h1>
+        </div>
+
+        <div class="settings-section">
+            <h2>Общая информация</h2>
+            <div id="info-message-area" class="message-area"></div>
+
+            <div id="view-info-section">
+                <div class="info-display-row">
+                    <span class="info-label">Имя пользователя</span>
+                    <span id="display-name" class="info-value">Загрузка...</span>
+                </div>
+                <div class="info-display-row">
+                    <span class="info-label">Email</span>
+                    <span id="display-email" class="info-value">Загрузка...</span>
+                </div>
+                <div class="form-actions">
+                    <button id="edit-info-btn" class="submit-button">Редактировать</button>
+                </div>
+            </div>
+
+            <form id="update-info-form" style="display: none;">
+                <div class="form-group">
+                    <label for="name">Имя пользователя</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" readonly style="background-color: #2a2a2a; cursor: not-allowed;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-edit-info-btn" class="cancel-button">Отмена</button>
+                    <button type="submit" class="submit-button">Сохранить</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="settings-section">
+            <h2>Смена пароля</h2>
+            <div id="password-message-area" class="message-area"></div>
+
+            <div id="view-password-section">
+                <div class="form-actions">
+                    <button id="show-password-form-btn" class="submit-button">Изменить пароль</button>
+                </div>
+            </div>
+
+            <form id="change-password-form" style="display: none;">
+                <div class="form-group">
+                    <label for="oldPassword">Старый пароль</label>
+                    <input type="password" id="oldPassword" name="oldPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Новый пароль</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Подтвердите новый пароль</label>
+                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required>
+                </div>
+                <div class="password-toggle">
+                    <input type="checkbox" id="show-passwords">
+                    <label for="show-passwords">Показать пароли</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-change-password-btn" class="cancel-button">Отмена</button>
+                    <button type="submit" class="submit-button">Сохранить пароль</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="settings-section danger-zone">
+            <h2>Опасная зона</h2>
+            <div id="delete-message-area" class="message-area"></div>
+            <p style="color: var(--text-muted-color);">Это действие необратимо. Все ваши данные, включая плейлисты и загруженные треки, будут удалены навсегда.</p>
+            <div class="form-actions">
+                <button id="delete-account-btn" class="submit-button delete-button">Удалить аккаунт</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="player"><span>На странице настроек плеер неактивен</span></div>
+
+<script>
+    let currentUser = null;
+    const API_BASE_URL = "http://localhost:8080";
+
+    const viewInfoSection = document.getElementById('view-info-section');
+    const editInfoForm = document.getElementById('update-info-form');
+    const viewPasswordSection = document.getElementById('view-password-section');
+    const editPasswordForm = document.getElementById('change-password-form');
+    const displayName = document.getElementById('display-name');
+    const displayEmail = document.getElementById('display-email');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const infoMessageArea = document.getElementById('info-message-area');
+    const passwordMessageArea = document.getElementById('password-message-area');
+    const deleteMessageArea = document.getElementById('delete-message-area');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) { window.location.href = "/login.html"; return; }
+        try {
+            currentUser = await fetchData("/api/users/me", "Ошибка загрузки данных пользователя");
+            if(currentUser){
+                setupLayoutUI(currentUser);
+                updateDisplayInfo(currentUser.name, currentUser.email);
+                attachEventListeners();
+            }
+        } catch (error) {
+            console.error("Initialization error:", error);
+            displayMessage(infoMessageArea, "Не удалось загрузить данные профиля.", "error");
+            document.querySelectorAll('.settings-section').forEach(s => s.style.display = 'none');
+        }
+    });
+
+    function updateDisplayInfo(name, email) {
+        displayName.textContent = name;
+        displayEmail.textContent = email;
+        nameInput.value = name;
+        emailInput.value = email;
+    }
+
+    function attachEventListeners() {
+        document.getElementById('edit-info-btn').addEventListener('click', () => {
+            viewInfoSection.style.display = 'none';
+            editInfoForm.style.display = 'block';
+        });
+        document.getElementById('cancel-edit-info-btn').addEventListener('click', () => {
+            viewInfoSection.style.display = 'block';
+            editInfoForm.style.display = 'none';
+            nameInput.value = currentUser.name;
+        });
+        document.getElementById('show-password-form-btn').addEventListener('click', () => {
+            viewPasswordSection.style.display = 'none';
+            editPasswordForm.style.display = 'block';
+        });
+        document.getElementById('cancel-change-password-btn').addEventListener('click', () => {
+            viewPasswordSection.style.display = 'block';
+            editPasswordForm.style.display = 'none';
+            editPasswordForm.reset();
+        });
+        editInfoForm.addEventListener('submit', handleUpdateInfo);
+        editPasswordForm.addEventListener('submit', handleChangePassword);
+        document.getElementById('delete-account-btn').addEventListener('click', handleDeleteAccount);
+        document.getElementById('show-passwords').addEventListener('change', function() {
+            const isChecked = this.checked;
+            ['oldPassword', 'newPassword', 'confirmNewPassword'].forEach(id => {
+                document.getElementById(id).type = isChecked ? 'text' : 'password';
+            });
+        });
+    }
+
+    function setupLayoutUI(user) {
+        const userGreeting = document.getElementById('nav-user-greeting');
+        if (userGreeting) userGreeting.textContent = `Привет, ${user.name}!`;
+        setupDropdownMenu();
+        const artistSection = document.getElementById('artist-section-sidebar');
+        if (artistSection) artistSection.style.display = (user.role === 'ARTIST') ? 'block' : 'none';
+        highlightActiveSidebarLink();
+    }
+
+    function setupDropdownMenu() {
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userDropdownContent = document.getElementById('user-dropdown-content');
+        const logoutLink = document.getElementById('logout-link');
+
+        if (userMenuButton) {
+            userMenuButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                this.parentElement.classList.toggle('active');
+                userDropdownContent.style.display = this.parentElement.classList.contains('active') ? 'block' : 'none';
+            });
+        }
+        window.addEventListener('click', function(event) {
+            if (userMenuButton && !userMenuButton.contains(event.target) && userMenuButton.parentElement.classList.contains('active')) {
+                userMenuButton.parentElement.classList.remove('active');
+                if(userDropdownContent) userDropdownContent.style.display = 'none';
+            }
+        });
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+            });
+        }
+    }
+
+    function highlightActiveSidebarLink() {
+        const currentPageFile = window.location.pathname.split('/').pop();
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+        sidebarLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPageFile) {
+                link.classList.add('active-sidebar-link');
+            } else {
+                link.classList.remove('active-sidebar-link');
+            }
+        });
+    }
+
+    function displayMessage(area, text, type, duration = 5000) {
+        area.innerHTML = `<div class="message ${type}" style="display:block;">${text}</div>`;
+        if (duration > 0) setTimeout(() => { area.innerHTML = ''; }, duration);
+    }
+
+    async function fetchData(endpoint, errorMessagePrefix = "Ошибка", options = {}) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) { window.location.href = "/login.html"; throw new Error("Токен не найден."); }
+        const fetchOptions = { ...options, headers: { 'Authorization': `Bearer ${token}`, ...(options.headers || {}) } };
+        if (options.body && typeof options.body === 'string' && !fetchOptions.headers['Content-Type']) {
+            fetchOptions.headers['Content-Type'] = 'application/json';
+        }
+        document.querySelectorAll('.submit-button').forEach(btn => btn.disabled = true);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem("jwtToken"); window.location.href = "/login.html";
+                throw new Error("Ошибка авторизации.");
+            }
+            if (response.status === 204) return { success: true };
+            if (response.headers.get("content-type")?.includes("text")) {
+                const text = await response.text();
+                if (!response.ok) throw new Error(text || `${errorMessagePrefix}: ${response.status}`);
+                return { success: true, message: text };
+            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.data?.message || data.message || `${errorMessagePrefix}: ${response.status}`);
+            return data;
+        } catch (error) {
+            console.error(`fetchData error for ${endpoint}:`, error);
+            throw error;
+        } finally {
+            document.querySelectorAll('.submit-button').forEach(btn => btn.disabled = false);
+        }
+    }
+
+    async function handleUpdateInfo(event) {
+        event.preventDefault();
+        const newName = nameInput.value.trim();
+        if (newName === currentUser.name) {
+            displayMessage(infoMessageArea, "Вы не внесли никаких изменений.", "info");
+            return;
+        }
+        try {
+            const updatedUser = await fetchData("/api/users/me", "Ошибка обновления профиля", {
+                method: 'PUT',
+                body: JSON.stringify({ name: newName })
+            });
+            currentUser.name = updatedUser.name;
+            updateDisplayInfo(currentUser.name, currentUser.email);
+            document.getElementById('nav-user-greeting').textContent = `Привет, ${currentUser.name}!`;
+            displayMessage(infoMessageArea, "Профиль успешно обновлен!", "success");
+            viewInfoSection.style.display = 'block';
+            editInfoForm.style.display = 'none';
+        } catch (error) {
+            displayMessage(infoMessageArea, error.message, "error");
+        }
+    }
+
+    async function handleChangePassword(event) {
+        event.preventDefault();
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        if (!oldPassword || !newPassword) {
+            displayMessage(passwordMessageArea, "Все поля должны быть заполнены.", "error"); return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            displayMessage(passwordMessageArea, "Новые пароли не совпадают.", "error"); return;
+        }
+        try {
+            await fetchData("/api/users/me", "Ошибка смены пароля", {
+                method: 'PUT',
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+            displayMessage(passwordMessageArea, "Пароль успешно изменен!", "success");
+            editPasswordForm.reset();
+            viewPasswordSection.style.display = 'block';
+            editPasswordForm.style.display = 'none';
+        } catch (error) {
+            displayMessage(passwordMessageArea, error.message, "error");
+        }
+    }
+
+    async function handleDeleteAccount() {
+        if (!confirm("Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя будет отменить.")) return;
+        try {
+            const response = await fetchData("/api/users/me", "Ошибка удаления аккаунта", { method: 'DELETE' });
+            displayMessage(deleteMessageArea, response.message || "Ваш аккаунт успешно удален. Вы будете перенаправлены.", "success", 0);
+            localStorage.removeItem("jwtToken");
+            setTimeout(() => { window.location.href = "/register.html"; }, 3000);
+        } catch (error) {
+            displayMessage(deleteMessageArea, error.message, "error");
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -3,55 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Политика конфиденциальности - Rhythmix</title>
+    <title>Политика конфиденциальности - Василёк</title>
     <style>
-        /* Основные стили */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0f0f0f;
-            color: white;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
+        :root {
+            --primary-color: #5A87D0;
+            --secondary-color: #9d79d0;
+            --tertiary-color: #64b58e;
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --surface-highlight-color: #242424;
+            --text-color: #ffffff;
+            --text-muted-color: #b3b3b3;
+            --border-color: #2f2f2f;
         }
 
-        /* Навигационная панель */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background-color: rgba(15, 15, 15, 0.9);
+            background-color: rgba(26, 26, 26, 0.9);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
             z-index: 1000;
-            border-bottom: 1px solid #ff2a2a;
+            border-bottom: 1px solid var(--primary-color);
+            backdrop-filter: blur(5px);
         }
-
+        .navbar-logo a { display: flex; align-items: center; }
         .navbar-logo img {
-            height: 40px;
+            height: 65px;
             width: auto;
         }
-
         .navbar-links {
             display: flex;
             gap: 1.5rem;
         }
-
         .navbar-links a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
             position: relative;
         }
-
         .navbar-links a:hover {
-            color: #ff2a2a;
+            color: var(--primary-color);
         }
-
         .navbar-links a::after {
             content: '';
             position: absolute;
@@ -59,118 +69,125 @@
             left: 0;
             width: 0;
             height: 2px;
-            background-color: #ff2a2a;
+            background-color: var(--primary-color);
             transition: width 0.3s;
         }
-
         .navbar-links a:hover::after {
             width: 100%;
         }
 
-        /* Контейнер контента */
-        .privacy-container {
-            max-width: 800px;
-            margin: 100px auto 50px;
+        .content-container {
+            margin-top: 100px;
             padding: 2rem;
-            background-color: #181818;
+            max-width: 800px;
+            width: 90%;
+            background-color: var(--surface-color);
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(255, 42, 42, 0.1);
-            border: 1px solid #2a2a2a;
+            box-shadow: 0 8px 20px rgba(90, 135, 208, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
         }
-
         h1 {
-            font-size: 26px;
+            color: var(--primary-color);
+            text-align: center;
             margin-bottom: 1.5rem;
-            color: #fff;
-            position: relative;
-            display: inline-block;
-            padding-bottom: 10px;
         }
-
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: #ff2a2a;
-        }
-
         h2 {
-            font-size: 20px;
-            margin: 2rem 0 1rem;
-            color: #ff2a2a;
+            color: #e0e0e0;
+            margin-top: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
         }
-
-        p {
-            margin-bottom: 1rem;
+        p, li {
+            line-height: 1.7;
+            color: #ccc;
         }
-
         ul {
-            margin-bottom: 1rem;
             padding-left: 20px;
         }
-
         li {
             margin-bottom: 0.5rem;
         }
-
         a {
-            color: #ff2a2a;
+            color: var(--primary-color);
             text-decoration: none;
+            font-weight: bold;
         }
-
         a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
+
 <nav class="navbar">
     <div class="navbar-logo">
-        <img src="images/logooo.png" alt="Rhythmix Logo">
+        <a href="main.html"><img src="images/logooo.png" alt="Василёк Logo"></a>
     </div>
     <div class="navbar-links">
-        <a href="/login">Вход</a>
-        <a href="/register">Регистрация</a>
+        <a href="login.html">Вход</a>
+        <a href="register.html">Регистрация</a>
     </div>
 </nav>
-<div class="privacy-container">
-    <h1>Политика конфиденциальности Rhythmix</h1>
 
-    <p>Дата последнего обновления: 01.01.2023</p>
+<div class="content-container">
+    <!-- === Изменения только в этом блоке === -->
+    <h1>Политика конфиденциальности Василёк</h1>
+    <p><em>Дата последнего обновления: 10.04.2025</em></p>
 
-    <h2>1. Сбор информации</h2>
-    <p>Мы собираем следующую информацию:</p>
+    <p>Добро пожаловать в Василёк! Мы ценим вашу конфиденциальность и стремимся защищать ваши персональные данные. Настоящая Политика конфиденциальности объясняет, как мы собираем, используем, раскрываем и защищаем вашу информацию при использовании нашего веб-сайта.</p>
+
+    <h2>1. Собираемая информация</h2>
+    <p>Мы можем собирать следующую информацию:</p>
     <ul>
-        <li>Персональные данные при регистрации (имя, email)</li>
-        <li>Данные об использовании сервиса</li>
-        <li>Технические данные (IP-адрес, тип устройства)</li>
+        <li><strong>Личная идентификационная информация:</strong> Имя, адрес электронной почты, пароль (в зашифрованном виде), выбранная роль (Пользователь/Артист) при регистрации.</li>
+        <li><strong>Информация об использовании:</strong> Данные о том, как вы используете Сервис, включая загруженные треки, созданные плейлисты, лайки, подписки на жанры и артистов, историю прослушиваний.</li>
+        <li><strong>Техническая информация:</strong> IP-адрес, тип браузера, операционная система, информация об устройстве, файлы cookie и аналогичные технологии отслеживания.</li>
     </ul>
 
-    <h2>2. Использование информации</h2>
-    <p>Ваши данные используются для:</p>
+    <h2>2. Использование вашей информации</h2>
+    <p>Мы используем собранную информацию для следующих целей:</p>
     <ul>
-        <li>Предоставления и улучшения сервиса</li>
-        <li>Персонализации пользовательского опыта</li>
-        <li>Обеспечения безопасности</li>
+        <li>Предоставление и поддержка Сервиса.</li>
+        <li>Аутентификация пользователей и обеспечение безопасности аккаунтов.</li>
+        <li>Персонализация вашего опыта использования Сервиса.</li>
+        <li>Отправка уведомлений, связанных с работой Сервиса (например, подтверждение email, сброс пароля).</li>
+        <li>Анализ использования Сервиса для его улучшения.</li>
+        <li>Соблюдение юридических обязательств.</li>
     </ul>
 
-    <h2>3. Защита данных</h2>
-    <p>Мы применяем современные методы шифрования и защиты данных от несанкционированного доступа.</p>
+    <h2>3. Раскрытие вашей информации</h2>
+    <p>Мы не продаем и не передаем вашу личную информацию третьим лицам, за исключением следующих случаев:</p>
+    <ul>
+        <li>С вашего согласия.</li>
+        <li>Поставщикам услуг, которые помогают нам в работе Сервиса (например, хостинг, облачное хранилище для файлов, почтовые сервисы), при условии соблюдения ими обязательств по конфиденциальности.</li>
+        <li>Если это требуется по закону или для защиты наших прав.</li>
+    </ul>
 
-    <h2>4. Cookies</h2>
-    <p>Наш сервис использует cookies для улучшения работы сайта. Вы можете отключить их в настройках браузера.</p>
+    <h2>4. Хранение и безопасность данных</h2>
+    <p>Мы принимаем разумные меры для защиты вашей информации от несанкционированного доступа, использования или раскрытия. Однако ни один метод передачи данных через Интернет или электронного хранения не является на 100% безопасным.</p>
+    <p>Ваши пароли хранятся в зашифрованном виде (с использованием BCrypt).</p>
 
-    <h2>5. Ответственность за контент</h2>
-    <p>Мы не осуществляем модерацию контента, размещаемого пользователями. Все материалы, опубликованные на платформе, являются личной ответственностью пользователя, который их разместил. Мы не контролируем, не проверяем и не несем ответственности за содержание, которое пользователи размещают на нашем сервисе.</p>
+    <h2>5. Ваши права</h2>
+    <p>В зависимости от вашего местоположения, вы можете иметь следующие права в отношении ваших персональных данных:</p>
+    <ul>
+        <li>Право на доступ к вашим данным.</li>
+        <li>Право на исправление неточной информации.</li>
+        <li>Право на удаление ваших данных ("право на забвение").</li>
+        <li>Право на ограничение обработки.</li>
+        <li>Право на возражение против обработки.</li>
+    </ul>
+    <p>Для осуществления этих прав, пожалуйста, свяжитесь с нами по адресу <a href="mailto:privacy@vasilek.music.example.com">privacy@vasilek.music.example.com</a></p>
 
-    <h2>6. Изменения в политике</h2>
-    <p>Мы оставляем за собой право вносить изменения в настоящую политику. Все изменения будут опубликованы на этой странице.</p>
+    <h2>6. Файлы Cookie</h2>
+    <p>Мы используем файлы cookie для улучшения работы Сервиса. Вы можете настроить ваш браузер на отказ от всех или некоторых файлов cookie, или на уведомление при их отправке. Однако, если вы отключите cookie, некоторые части Сервиса могут работать некорректно.</p>
 
-    <h2>7. Контакты</h2>
-    <p>По вопросам конфиденциальности обращайтесь: <a href="mailto:privacy@rhythmix.com">privacy@rhythmix.com</a></p>
+    <h2>7. Изменения в Политике конфиденциальности</h2>
+    <p>Мы можем периодически обновлять эту Политику конфиденциальности. Мы уведомим вас о любых изменениях, опубликовав новую Политику на этой странице. Рекомендуется регулярно просматривать эту Политику на предмет изменений.</p>
+
+    <h2>8. Свяжитесь с нами</h2>
+    <p>Если у вас есть какие-либо вопросы относительно этой Политики конфиденциальности, пожалуйста, свяжитесь с нами по адресу: <a href="mailto:privacy@vasilek.music.example.com">privacy@vasilek.music.example.com</a></p>
 </div>
+
 </body>
 </html>
