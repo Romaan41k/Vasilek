@@ -41,6 +41,8 @@
         .page-header h1 { color: var(--primary-color); font-size: 2rem; margin: 0; }
         #back-to-subs-btn { background-color: var(--surface-highlight-color); border: 1px solid var(--border-color); color: var(--text-muted-color); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
         #back-to-subs-btn:hover { color: white; border-color: var(--primary-color); }
+        .unsubscribe-button { background-color: var(--surface-highlight-color); border: 1px solid var(--border-color); color: var(--text-muted-color); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+        .unsubscribe-button:hover { color: white; border-color: var(--danger-color); background-color: rgba(220, 53, 69, 0.2); }
         .tabs-container { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .tab-button { padding: 0.75rem 1.5rem; cursor: pointer; background: none; border: none; color: var(--text-muted-color); font-size: 1rem; font-weight: 500; position: relative; transition: color 0.2s; }
         .tab-button.active { color: var(--primary-color); }
@@ -51,8 +53,6 @@
         .subscription-card .details { flex-grow: 1; cursor: pointer; }
         .subscription-card .details .name { font-size: 1.1rem; color: var(--text-color); text-decoration: none; }
         .subscription-card .details .name:hover { text-decoration: underline; color: var(--primary-color); }
-        .subscription-card .unsubscribe-button { background-color: var(--surface-highlight-color); border: 1px solid var(--border-color); color: var(--text-muted-color); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
-        .subscription-card .unsubscribe-button:hover { color: white; border-color: var(--danger-color); background-color: rgba(220, 53, 69, 0.2); }
         .track-card { background-color: var(--surface-color); border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; border: 1px solid var(--border-color); }
         .track-cover { width: 50px; height: 50px; min-width: 50px; flex-shrink: 0; background-size: cover; background-position: center; border-radius: 6px; background-color: #222; margin-right: 1rem; }
         .track-details-wrapper { flex-grow: 1; min-width: 0; }
@@ -68,6 +68,7 @@
         .feed-item-header { padding: 0.75rem 1.25rem; font-size: 0.9rem; color: var(--text-muted-color); border-bottom: 1px solid var(--border-color); background-color: rgba(255,255,255,0.03); }
         .feed-item-header i { margin-right: 0.5rem; }
         .feed-item > .track-card, .feed-item > a { border: none; border-radius: 0; text-decoration: none; color: inherit; }
+        .feed-item.seen { opacity: 0.6; transition: opacity 0.5s; }
         .player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-height); background-color: #1c1c1c; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000; }
         .player-info { display: flex; align-items: center; min-width: 200px; flex-shrink: 0; }
         .player-image { width: 50px; height: 50px; border-radius: 4px; margin-right: 1rem; object-fit: cover; background-color: #333; }
@@ -163,6 +164,7 @@
     let currentTrackIndex = -1;
     let isShuffle = false;
     let repeatMode = 0;
+    let feedItems = [];
     const playerElements = { playPauseBtn: document.getElementById('player-play-pause'), prevBtn: document.getElementById('player-prev'), nextBtn: document.getElementById('player-next'), shuffleBtn: document.getElementById('player-shuffle'), repeatBtn: document.getElementById('player-repeat'), progressBar: document.getElementById('player-progress-bar'), progressFill: document.getElementById('player-progress-fill'), currentTimeEl: document.getElementById('player-current-time'), durationEl: document.getElementById('player-duration'), volumeBar: document.getElementById('player-volume-bar'), volumeFill: document.getElementById('player-volume-fill'), volumeIcon: document.getElementById('player-volume-icon'), currentCover: document.getElementById('player-current-cover'), currentTitle: document.getElementById('player-current-title'), currentArtist: document.getElementById('player-current-artist') };
     const pageTitle = document.getElementById('page-title'), mainView = document.getElementById('main-view'), genreTracksView = document.getElementById('genre-tracks-view'), backToSubsBtn = document.getElementById('back-to-subs-btn'), tabsContainer = document.querySelector('.tabs-container'), feedContainer = document.getElementById('feed-container'), artistSubscriptionsContainer = document.getElementById('artist-subscriptions-container'), genreSubscriptionsContainer = document.getElementById('genre-subscriptions-container'), genreTrackListContainer = document.getElementById('genre-track-list-container'), noFeedMessage = document.getElementById('no-feed-message'), noArtistSubscriptions = document.getElementById('no-artist-subscriptions'), noGenreSubscriptions = document.getElementById('no-genre-subscriptions');
 
@@ -185,14 +187,19 @@
     });
 
     async function loadInitialData() {
-        const [feed, artistSubs, genreSubs] = await Promise.all([
-            fetchData("/api/feed/new", "Ошибка загрузки ленты"),
-            fetchData("/api/artist-subscriptions/my", "Ошибка загрузки подписок на артистов"),
-            fetchData("/api/genre-subscriptions/my", "Ошибка загрузки подписок на жанры"),
-        ]);
-        displayFeed(feed);
-        displayArtistSubscriptions(artistSubs);
-        displayGenreSubscriptions(genreSubs);
+        try {
+            const [feedData, artistSubs, genreSubs] = await Promise.all([
+                fetchData("/api/feed/new", "Ошибка загрузки ленты").catch(e => { console.error(e); return []; }),
+                fetchData("/api/artist-subscriptions/my", "Ошибка загрузки подписок на артистов").catch(e => { console.error(e); return []; }),
+                fetchData("/api/genre-subscriptions/my", "Ошибка загрузки подписок на жанры").catch(e => { console.error(e); return []; }),
+            ]);
+            feedItems = feedData || [];
+            displayFeed(feedItems);
+            displayArtistSubscriptions(artistSubs);
+            displayGenreSubscriptions(genreSubs);
+        } catch (error) {
+            console.error("Ошибка при параллельной загрузке данных:", error);
+        }
     }
 
     function setupEventListeners() {
@@ -243,6 +250,8 @@
         genreTracksView.style.display = 'none';
         pageTitle.textContent = 'Лента и подписки';
         backToSubsBtn.style.display = 'none';
+        const existingUnsubscribeBtn = document.getElementById('genre-unsubscribe-btn');
+        if (existingUnsubscribeBtn) existingUnsubscribeBtn.remove();
     }
 
     async function showTracksForGenre(genre) {
@@ -250,25 +259,43 @@
         genreTracksView.style.display = 'block';
         pageTitle.textContent = `Треки в жанре: ${genre}`;
         backToSubsBtn.style.display = 'inline-flex';
+        const existingUnsubscribeBtn = document.getElementById('genre-unsubscribe-btn');
+        if (existingUnsubscribeBtn) existingUnsubscribeBtn.remove();
+        const unsubscribeBtn = document.createElement('button');
+        unsubscribeBtn.id = 'genre-unsubscribe-btn';
+        unsubscribeBtn.className = 'unsubscribe-button';
+        unsubscribeBtn.textContent = 'Отписаться от жанра';
+        unsubscribeBtn.style.marginLeft = '1rem';
+        unsubscribeBtn.onclick = async () => {
+            if (confirm(`Отписаться от жанра "${genre}"?`)) {
+                try {
+                    await fetchData(`/api/genre-subscriptions?genre=${encodeURIComponent(genre)}`, 'Ошибка', { method: 'DELETE' });
+                    showMainView();
+                    loadInitialData();
+                } catch (error) { alert(`Не удалось отписаться: ${error.message}`); }
+            }
+        };
+        pageTitle.insertAdjacentElement('afterend', unsubscribeBtn);
+
         genreTrackListContainer.innerHTML = `<p>Загрузка...</p>`;
         try {
             const tracks = await fetchData(`/api/tracks/genre/${genre}`);
-            currentTrackList = tracks;
+            currentTrackList = tracks || [];
             genreTrackListContainer.innerHTML = '';
-            if (!tracks || tracks.length === 0) { genreTrackListContainer.innerHTML = `<div class="no-results-placeholder"><i class="fas fa-compact-disc"></i><p>В этом жанре пока нет треков.</p></div>`; }
+            if (currentTrackList.length === 0) { genreTrackListContainer.innerHTML = `<div class="no-results-placeholder"><i class="fas fa-compact-disc"></i><p>В этом жанре пока нет треков.</p></div>`; }
             else {
-                tracks.forEach(track => genreTrackListContainer.insertAdjacentHTML('beforeend', createTrackCardHTML(track)));
+                currentTrackList.forEach(track => genreTrackListContainer.insertAdjacentHTML('beforeend', createTrackCardHTML(track)));
                 rebindEventListenersForContainer(genreTrackListContainer);
             }
         } catch (error) { genreTrackListContainer.innerHTML = `<div class="no-results-placeholder"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки треков: ${error.message}</p></div>`; }
     }
 
-    function displayFeed(feedItems) {
+    function displayFeed(items) {
         feedContainer.innerHTML = '';
-        noFeedMessage.style.display = (!feedItems || feedItems.length === 0) ? 'block' : 'none';
-        if (!feedItems) return;
-        currentTrackList = feedItems.filter(item => item.track).map(item => item.track);
-        feedItems.forEach(item => {
+        noFeedMessage.style.display = (!items || items.length === 0) ? 'block' : 'none';
+        if (!items) return;
+
+        items.forEach(item => {
             const releaseDate = new Date(item.releaseDate).toLocaleDateString();
             let contentHTML = '';
             if (item.track) {
@@ -315,13 +342,19 @@
             const trackId = Number(card.dataset.trackId);
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (feedItem) markNotificationAsSeen(feedItem.dataset.notificationId);
-                const list = (container === genreTrackListContainer) ? currentTrackList : currentTrackList.filter(t => t.id === trackId);
-                const trackIndex = list.findIndex(t => t.id === trackId);
-                if (trackIndex !== -1) playTrackFromList(trackIndex, list);
+                if (feedItem) {
+                    markNotificationAsSeen(feedItem.dataset.notificationId);
+                }
+                const sourceTrackList = (container === genreTrackListContainer) ?
+                    currentTrackList :
+                    feedItems.filter(item => item.track).map(item => item.track);
+                const trackIndex = sourceTrackList.findIndex(t => t.id === trackId);
+                if (trackIndex !== -1) {
+                    playTrackFromList(trackIndex, sourceTrackList);
+                }
             });
         });
-        container.querySelectorAll('.feed-item a').forEach(link => {
+        container.querySelectorAll('.feed-item > a').forEach(link => {
             const feedItem = link.closest('.feed-item');
             link.addEventListener('click', () => { if(feedItem) markNotificationAsSeen(feedItem.dataset.notificationId); });
         });
@@ -329,25 +362,44 @@
 
     async function handleUnsubscribeArtist(event) {
         const card = event.target.closest('.subscription-card');
-        if (confirm(`Отписаться от ${card.querySelector('.name').textContent}?`)) {
-            await fetchData(`/api/artist-subscriptions?artistId=${card.dataset.artistId}`, 'Ошибка', { method: 'DELETE' });
-            card.remove();
+        const artistName = card.querySelector('.name').textContent;
+        const artistId = card.dataset.artistId;
+        if (confirm(`Отписаться от ${artistName}?`)) {
+            try {
+                event.target.disabled = true;
+                await fetchData(`/api/artist-subscriptions?artistId=${artistId}`, 'Ошибка отписки', { method: 'DELETE' });
+                card.remove();
+            } catch (error) {
+                alert(`Не удалось отписаться: ${error.message}`);
+                event.target.disabled = false;
+            }
         }
     }
 
     async function handleUnsubscribeGenre(event) {
         const card = event.target.closest('.subscription-card');
-        if (confirm(`Отписаться от жанра "${card.dataset.genreName}"?`)) {
-            await fetchData(`/api/genre-subscriptions?genre=${encodeURIComponent(card.dataset.genreName)}`, 'Ошибка', { method: 'DELETE' });
-            card.remove();
+        const genreName = card.dataset.genreName;
+        if (confirm(`Отписаться от жанра "${genreName}"?`)) {
+            try {
+                event.target.disabled = true;
+                await fetchData(`/api/genre-subscriptions?genre=${encodeURIComponent(genreName)}`, 'Ошибка отписки', { method: 'DELETE' });
+                card.remove();
+            } catch (error) {
+                alert(`Не удалось отписаться: ${error.message}`);
+                event.target.disabled = false;
+            }
         }
     }
 
     async function markNotificationAsSeen(notificationId) {
         if (!notificationId) return;
+        const feedItem = document.querySelector(`.feed-item[data-notification-id="${notificationId}"]`);
+        if (feedItem && feedItem.classList.contains('seen')) return;
         try {
             await fetchData(`/api/feed/mark-as-seen/${notificationId}`, "Ошибка", { method: 'POST' });
-            console.log(`Notification ${notificationId} marked as seen.`);
+            if (feedItem) {
+                feedItem.classList.add('seen');
+            }
         } catch (error) {
             console.error("Не удалось отметить уведомление как просмотренное:", error);
         }
@@ -355,12 +407,33 @@
 
     async function fetchData(endpoint, errorMessage = "Ошибка", options = {}) {
         const token = localStorage.getItem("jwtToken");
-        if (!token && !options.isPublic) throw new Error("401");
-        options.headers = { ...options.headers, 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+        if (!token && !options.isPublic) {
+            window.location.href = "/login.html";
+            throw new Error("401");
+        }
+        options.headers = { 'Authorization': `Bearer ${token}`, ...options.headers };
+        if (options.body && !options.headers['Content-Type']) {
+            options.headers['Content-Type'] = 'application/json';
+        }
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-            if (!response.ok) throw new Error(`${response.status}`);
-            return response.status === 204 ? null : response.json();
+            if(response.status === 401) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+                throw new Error("Сессия истекла");
+            }
+            if (!response.ok) {
+                let errorText = `${errorMessage}: Статус ${response.status}`;
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const errData = await response.json().catch(() => null);
+                    if (errData && errData.message) errorText = errData.message;
+                }
+                throw new Error(errorText);
+            }
+            if (response.status === 204) return null;
+            const responseText = await response.text();
+            return responseText ? JSON.parse(responseText) : null;
         } catch (error) { console.error(`Ошибка при запросе к ${endpoint}:`, error); throw error; }
     }
 
@@ -378,6 +451,7 @@
         playerElements.progressBar.addEventListener('click', e => { if (isNaN(currentAudio.duration)) return; const rect = playerElements.progressBar.getBoundingClientRect(); currentAudio.currentTime = ((e.clientX - rect.left) / rect.width) * currentAudio.duration; });
         playerElements.volumeBar.addEventListener('click', e => { const rect = playerElements.volumeBar.getBoundingClientRect(); const vol = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)); currentAudio.volume = vol; playerElements.volumeFill.style.width = `${vol*100}%`; updateVolumeIcon(vol); });
     }
+
     function playTrackFromList(index, trackList) {
         if (!trackList || trackList.length === 0) return;
         currentTrackList = trackList;
@@ -388,19 +462,49 @@
         updatePlayerUI(track);
         fetch(`${API_BASE_URL}/api/tracks/${track.id}/listen`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${localStorage.getItem("jwtToken")}` } });
     }
+
     function updatePlayerUI(track) {
         playerElements.currentCover.src = `${API_BASE_URL}${track.coverPath || '/images/default-cover.png'}`;
         playerElements.currentTitle.textContent = track.title;
         playerElements.currentArtist.textContent = track.artist.name;
     }
+
     function togglePlayPause() { if (!currentAudio.src) { if (currentTrackList.length > 0) playTrackFromList(0, currentTrackList); } else { currentAudio.paused ? currentAudio.play() : currentAudio.pause(); } }
-    function playNextTrack() { if (currentTrackList.length === 0) return; currentTrackIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex + 1) % currentTrackList.length; playTrackFromList(currentTrackIndex, currentTrackList); }
-    function playPrevTrack() { if (currentTrackList.length === 0) return; if (currentAudio.currentTime > 3) { currentAudio.currentTime = 0; } else { currentTrackIndex = (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length; playTrackFromList(currentTrackIndex, currentTrackList); } }
-    function handleTrackEnd() { if (repeatMode === 2) { currentAudio.currentTime = 0; currentAudio.play(); } else if (repeatMode === 1) { playNextTrack(); } else { if (currentTrackIndex < currentTrackList.length - 1 || isShuffle) playNextTrack(); } }
+
+    function playNextTrack() {
+        if (currentTrackList.length === 0) return;
+        currentTrackIndex = isShuffle ? Math.floor(Math.random() * currentTrackList.length) : (currentTrackIndex + 1) % currentTrackList.length;
+        playTrackFromList(currentTrackIndex, currentTrackList);
+    }
+
+    function playPrevTrack() {
+        if (currentTrackList.length === 0) return;
+        if (currentAudio.currentTime > 3) { currentAudio.currentTime = 0; } else {
+            currentTrackIndex = (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length;
+            playTrackFromList(currentTrackIndex, currentTrackList);
+        }
+    }
+
+    function handleTrackEnd() {
+        if (repeatMode === 2) { currentAudio.currentTime = 0; currentAudio.play(); }
+        else if (repeatMode === 1) { playNextTrack(); }
+        else { if (currentTrackIndex < currentTrackList.length - 1 || isShuffle) playNextTrack(); }
+    }
+
     function toggleShuffle() { isShuffle = !isShuffle; playerElements.shuffleBtn.classList.toggle('active-control', isShuffle); }
-    function cycleRepeatMode() { repeatMode = (repeatMode + 1) % 3; const icons = ['fa-redo', 'fa-redo-alt', 'fa-random']; playerElements.repeatBtn.querySelector('i').className = `fas ${icons[repeatMode]}`; playerElements.repeatBtn.classList.toggle('active-control', repeatMode !== 0); }
+
+    function cycleRepeatMode() {
+        repeatMode = (repeatMode + 1) % 3;
+        const icons = ['fa-redo', 'fa-redo-alt', 'fa-retweet'];
+        const iconElement = playerElements.repeatBtn.querySelector('i');
+        if (repeatMode === 0) { iconElement.className = 'fas fa-redo'; playerElements.repeatBtn.classList.remove('active-control'); }
+        else if (repeatMode === 1) { iconElement.className = 'fas fa-redo-alt'; playerElements.repeatBtn.classList.add('active-control'); }
+        else { iconElement.className = 'fas fa-retweet'; playerElements.repeatBtn.classList.add('active-control'); }
+    }
+
     function formatTime(s) { return isNaN(s) ? "0:00" : `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`; }
-    function updateVolumeIcon(vol) { if (!playerElements.volumeIcon) return; playerElements.volumeIcon.className = vol === 0 ? 'fas fa-volume-mute volume-icon' : (vol < 0.5 ? 'fas fa-volume-down volume-icon' : 'fas fa-volume-up volume-icon'); }
+
+    function updateVolumeIcon(vol) { if (!playerElements.volumeIcon) return; playerElements.volumeIcon.className = `fas volume-icon ${vol === 0 ? 'fa-volume-mute' : (vol < 0.5 ? 'fa-volume-down' : 'fa-volume-up')}`; }
 </script>
 </body>
 </html>

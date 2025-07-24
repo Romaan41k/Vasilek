@@ -11,8 +11,8 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "tracks")
-@EqualsAndHashCode(exclude = {"artist", "notifications", "likes"})
-@ToString(exclude = {"artist", "notifications", "likes"})
+@EqualsAndHashCode(exclude = {"artist", "album", "notifications", "likes"})
+@ToString(exclude = {"artist", "album", "notifications", "likes"})
 public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,10 @@ public class Track {
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private User artist;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id")
+    private Album album;
 
     @Column(nullable = false)
     private String genre;

@@ -28,6 +28,8 @@ public class SecurityConfiguration {
                                 "/api/auth/**",
                                 "/",
                                 "/*.html",
+                                "/reset-password",
+                                "/api/users/reset-password",
                                 "/*.css",
                                 "/static/**",
                                 "/images/**",

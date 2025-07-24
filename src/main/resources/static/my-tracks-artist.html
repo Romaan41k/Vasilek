@@ -485,45 +485,76 @@
 
     async function fetchData(endpoint, errorMessagePrefix = "Ошибка", options = {}) {
         const token = localStorage.getItem("jwtToken");
-        if (!options.isPublic && !token) { window.location.href = "/login.html"; throw new Error("Отсутствует токен."); }
-        const fetchOptions = { ...options, headers: { ...(options.headers || {}), } };
-        if (token && !options.isPublic) fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+        if (!options.isPublic && !token) {
+            window.location.href = "/login.html";
+            throw new Error("Отсутствует токен аутентификации.");
+        }
+
+        const fetchOptions = {
+            ...options,
+            headers: {
+                ...(options.headers || {}),
+            }
+        };
+
+        if (token && !options.isPublic) {
+            fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+        }
+
         if (options.body && !(options.body instanceof FormData) && !fetchOptions.headers['Content-Type']) {
             fetchOptions.headers['Content-Type'] = 'application/json';
         }
+
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
-            if (!options.isPublic && (response.status === 401 || response.status === 403)) {
-                localStorage.removeItem("jwtToken"); window.location.href = "/login.html";
-                throw new Error(`Ошибка авторизации: ${response.status}`);
+
+            if (response.status === 401) {
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html";
+                throw new Error("Ошибка авторизации. Требуется повторный вход.");
             }
 
-            if (response.status === 204 || (response.status === 200 && response.headers.get("content-length") === "0" && !response.headers.get("content-type")?.includes("application/json"))) {
-                if (response.headers.get("content-type")?.includes("text/plain") || response.headers.get("content-type")?.includes("text/html")) {
-                    return await response.text();
+            if (response.status === 204) {
+                return null;
+            }
+
+            const responseData = await response.text();
+
+            if (response.ok) {
+                try {
+                    return JSON.parse(responseData);
+                } catch (e) {
+                    return responseData;
                 }
-                return { success: true, status: response.status, noBody: true };
+            } else {
+                let errorMessage = errorMessagePrefix;
+                try {
+                    const errorJson = JSON.parse(responseData);
+                    let rawMessage = errorJson.data?.message || errorJson.message || errorJson.error || JSON.stringify(errorJson);
+                    errorMessage = rawMessage.replace(/^\d{3}\s[A-Z_]+\s*"?/, '').replace(/"?$/, '').trim();
+                } catch (e) {
+                    errorMessage = responseData || `${errorMessagePrefix}: ${response.status} ${response.statusText}`;
+                }
+                throw new Error(errorMessage);
             }
 
-            const responseText = await response.text();
-            let responseData;
-            try { responseData = JSON.parse(responseText); }
-            catch (e) {
-                if (!response.ok) throw new Error(responseText || `${errorMessagePrefix}: Сервер вернул ошибку ${response.status} без JSON.`);
-                if (options.method === 'PATCH' && response.ok) return responseText;
-                responseData = { message: `${errorMessagePrefix}: Некорректный JSON ответ от сервера.` };
-            }
-
-            if (!response.ok) {
-                throw new Error(responseData.data?.message || responseData.message || `${errorMessagePrefix}: ${response.status}`);
-            }
-            return responseData;
         } catch (error) {
-            console.error(`fetchData (${endpoint}) error:`, error);
-            const targetMessageArea = editTrackModal.style.display === 'flex' ? editModalMessageArea : globalMessageArea;
-            if (!error.message.startsWith("Ошибка авторизации") && !error.message.startsWith("Отсутствует токен")) {
-                displayMessage(targetMessageArea, error.message, 'error');
+            console.error(`fetchData (${endpoint}) ошибка:`, error.message);
+            const targetMessageArea = document.getElementById('editTrackModal')?.style.display === 'flex' ?
+                document.getElementById('edit-modal-message-area') :
+                document.getElementById('global-message-area');
+
+            const displayInArea = (area, msg, type) => {
+                if (area) {
+                    area.innerHTML = `<div class="message ${type}" style="display:block;">${msg}</div>`;
+                    setTimeout(() => { area.innerHTML = ''; }, 5000);
+                }
+            };
+
+            if (targetMessageArea) {
+                displayInArea(targetMessageArea, error.message, 'error');
             }
+
             throw error;
         }
     }

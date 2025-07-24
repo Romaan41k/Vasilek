@@ -84,6 +84,10 @@ public class TrackServiceImpl implements TrackService {
             throw new IllegalStateException("Редактирование доступно только в течение 30 минут после создания.");
         }
 
+        if (track.getLikesCount() > 0) {
+            throw new IllegalStateException("Нельзя редактировать трек, у которого уже есть лайки.");
+        }
+
         if (title != null && !title.isBlank()) {
             track.setTitle(title);
         }

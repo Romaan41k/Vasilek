@@ -24,9 +24,10 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<User> updateUser(@RequestBody UpdateUserRequest updateRequest, @AuthenticationPrincipal User user) {
-        User updatedUser = userService.updateUser(user.getId(), updateRequest);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UpdateUserRequest updateRequest, @AuthenticationPrincipal User user) {
+        User updatedUserEntity = userService.updateUser(user.getId(), updateRequest);
+        UserDTO responseDto = UserMapper.convertToDto(updatedUserEntity);
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/me")

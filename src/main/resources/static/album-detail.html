@@ -336,27 +336,61 @@
     }
 
     async function handleLikeButtonClick(event) {
-        const button = event.currentTarget, trackCard = button.closest('.track-card'), trackId = Number(trackCard.dataset.trackId);
-        if(!currentUser) return;
+        const button = event.currentTarget;
+        const trackCard = button.closest('.track-card');
+        if (!trackCard) return;
+
+        const trackId = Number(trackCard.dataset.trackId);
+        if (!currentUser) {
+            displayGlobalMessage("Для этого действия необходимо авторизоваться.", "error");
+            return;
+        }
+
         const isCurrentlyLiked = userLikedTracks.has(trackId);
-        const icon = button.querySelector('i'), likesCountEl = trackCard.querySelector('.likes-count-display');
-        let currentLikes = parseInt(likesCountEl.innerText.trim()) || 0;
-        button.classList.toggle('liked', !isCurrentlyLiked);
-        icon.className = isCurrentlyLiked ? 'far fa-heart' : 'fas fa-heart';
-        likesCountEl.innerHTML = `<i class="fas fa-heart"></i> ${isCurrentlyLiked ? currentLikes - 1 : currentLikes + 1}`;
+
+        const icon = button.querySelector('i');
+        const likesCountEl = trackCard.querySelector('.likes-count-display');
+        let currentLikes = parseInt(likesCountEl.innerText.trim().match(/\d+$/)[0]) || 0;
+
+        const newLikedState = !isCurrentlyLiked;
+        button.classList.toggle('liked', newLikedState);
+        icon.className = newLikedState ? 'fas fa-heart' : 'far fa-heart';
+        likesCountEl.innerHTML = `<i class="fas fa-heart"></i> ${newLikedState ? currentLikes + 1 : currentLikes - 1}`;
+        button.title = newLikedState ? 'Убрать лайк' : 'Лайкнуть';
+        button.disabled = true;
+
         try {
             if (isCurrentlyLiked) {
-                await fetchData(`/api/track-likes?trackId=${trackId}`, "Ошибка", { method: 'DELETE' });
+                await fetchData(`/api/track-likes?trackId=${trackId}`, "Ошибка удаления лайка", {
+                    method: 'DELETE'
+                });
                 userLikedTracks.delete(trackId);
             } else {
-                await fetchData(`/api/track-likes`, "Ошибка", { method: 'POST', body: JSON.stringify({ track: { id: trackId } }) });
+                await fetchData(`/api/track-likes`, "Ошибка установки лайка", {
+                    method: 'POST',
+                    body: JSON.stringify({ track: { id: trackId } })
+                });
                 userLikedTracks.add(trackId);
             }
         } catch (error) {
+            console.error("Ошибка при обработке лайка:", error.message);
             displayGlobalMessage(error.message, 'error');
+
             button.classList.toggle('liked', isCurrentlyLiked);
             icon.className = isCurrentlyLiked ? 'fas fa-heart' : 'far fa-heart';
             likesCountEl.innerHTML = `<i class="fas fa-heart"></i> ${currentLikes}`;
+            button.title = isCurrentlyLiked ? 'Убрать лайк' : 'Лайкнуть';
+
+            if (error.message.includes("409")) {
+                console.warn("Обнаружена рассинхронизация лайков. Принудительно обновляем состояние.");
+                userLikedTracks.add(trackId);
+                button.classList.add('liked');
+                icon.className = 'fas fa-heart';
+                button.title = 'Убрать лайк';
+            }
+
+        } finally {
+            button.disabled = false;
         }
     }
 
@@ -385,24 +419,57 @@
 
     async function fetchData(endpoint, errorMessage = "Ошибка", options = {}) {
         const token = localStorage.getItem("jwtToken");
-        if (!token) throw new Error("401");
-        options.headers = { 'Authorization': `Bearer ${token}`, ...options.headers };
+        if (!token) {
+            window.location.href = "/login.html";
+            throw new Error("Пользователь не авторизован.");
+        }
+
+        options.headers = {
+            'Authorization': `Bearer ${token}`,
+            ...options.headers
+        };
         if (options.body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }
+
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-            if(response.status === 401) {
+
+            if (response.status === 401) {
                 localStorage.removeItem("jwtToken");
                 window.location.href = "/login.html";
+                throw new Error("Сессия истекла. Пожалуйста, войдите снова.");
             }
+
+
             if (!response.ok) {
-                const errData = await response.json().catch(()=>({}));
-                throw new Error(errData.message || `${errorMessage}: Статус ${response.status}`);
+                let errorText = `${errorMessage}: Статус ${response.status}`;
+                const contentType = response.headers.get("content-type");
+
+                if (contentType && contentType.includes("application/json")) {
+                    const errData = await response.json();
+                    errorText = errData.message || JSON.stringify(errData);
+                }
+                throw new Error(errorText);
             }
-            return response.status === 204 ? null : await response.json();
-        } catch (error) { console.error(`Ошибка: ${endpoint}`, error); throw error; }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            const responseText = await response.text();
+            if (responseText) {
+                return JSON.parse(responseText);
+            } else {
+                return null;
+            }
+
+        } catch (error) {
+            console.error(`Ошибка в fetchData для ${endpoint}:`, error);
+            throw error;
+        }
     }
+
     function displayGlobalMessage(message, type = 'error') {
         const area = document.getElementById('global-message-area');
         if(area) { area.innerHTML = `<div class="message ${type}" style="display:block;">${message}</div>`; setTimeout(() => area.innerHTML = '', 4000); }

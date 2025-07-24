@@ -1,7 +1,6 @@
 package rom41k.vasilek.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -87,14 +86,7 @@ public class AlbumController {
 
     @DeleteMapping("/{albumId}")
     public ResponseEntity<String> deleteAlbum(@PathVariable Long albumId, @AuthenticationPrincipal User currentUser) {
-        Album album = albumService.findById(albumId)
-                .orElseThrow(() -> new IllegalArgumentException("Album not found"));
-
-        if (!album.getArtist().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the owner of this album");
-        }
-
-        albumService.deleteAlbum(albumId);
+        albumService.deleteAlbum(albumId, currentUser);
         return ResponseEntity.ok("Album successfully deleted");
     }
 

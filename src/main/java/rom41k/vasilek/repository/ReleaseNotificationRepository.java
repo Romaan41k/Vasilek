@@ -13,4 +13,5 @@ public interface ReleaseNotificationRepository extends JpaRepository<ReleaseNoti
     List<ReleaseNotification> findByUserAndSeenIsFalseOrderByReleaseDateDesc(User user);
     Optional<ReleaseNotification> findByIdAndUserId(Long id, Long userId);
     void deleteByTrackId(Long trackId);
+    void deleteByAlbumId(Long albumId);
 }

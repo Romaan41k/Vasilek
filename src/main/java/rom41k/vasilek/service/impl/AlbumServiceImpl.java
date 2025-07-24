@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rom41k.vasilek.database.entity.Album;
 import rom41k.vasilek.database.entity.Track;
+import rom41k.vasilek.database.entity.User;
 import rom41k.vasilek.repository.AlbumRepository;
+import rom41k.vasilek.repository.ReleaseNotificationRepository;
 import rom41k.vasilek.repository.TrackRepository;
 import rom41k.vasilek.service.interfaces.AlbumService;
 import rom41k.vasilek.service.interfaces.NotificationService;
@@ -23,18 +25,18 @@ public class AlbumServiceImpl implements AlbumService {
     private final AlbumRepository albumRepository;
     private final TrackRepository trackRepository;
     private final NotificationService notificationService;
+    private final ReleaseNotificationRepository releaseNotificationRepository;
 
-    @Transactional
     @Override
+    @Transactional
     public Album createAlbum(Album album) {
         Optional<Album> existingAlbum = albumRepository.findByNameAndArtistId(album.getName(), album.getArtist().getId());
-
         if (existingAlbum.isPresent()) {
             throw new DataIntegrityViolationException("An album with this name already exists for this artist.");
         }
         Album savedAlbum = albumRepository.save(album);
         notificationService.createNotificationsForNewAlbum(savedAlbum);
-        return albumRepository.save(album);
+        return savedAlbum;
     }
 
     @Override
@@ -49,15 +51,30 @@ public class AlbumServiceImpl implements AlbumService {
         return albumRepository.findById(id);
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<Album> findByArtistId(Long artistId) {
         return albumRepository.findByArtistId(artistId);
     }
 
     @Override
-    public void deleteAlbum(Long id) {
-        albumRepository.deleteById(id);
+    @Transactional
+    public void deleteAlbum(Long albumId, User currentUser) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new RuntimeException("Альбом для удаления не найден: " + albumId));
+
+        if (!album.getArtist().getId().equals(currentUser.getId())) {
+            throw new SecurityException("Вы не можете удалить этот альбом, так как не являетесь его автором.");
+        }
+
+        releaseNotificationRepository.deleteByAlbumId(albumId);
+
+        for (Track track : album.getTracks()) {
+            track.setAlbum(null);
+            trackRepository.save(track);
+        }
+
+        albumRepository.delete(album);
     }
 
     @Override
